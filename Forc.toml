@@ -5,3 +5,5 @@ license = "Apache-2.0"
 name = "guild-pin-fuel"
 
 [dependencies]
+src_20 = { git = "https://github.com/FuelLabs/sway-standards", rev = "29cb3a4" }
+src_3 = { git = "https://github.com/FuelLabs/sway-standards", rev = "29cb3a4" }
