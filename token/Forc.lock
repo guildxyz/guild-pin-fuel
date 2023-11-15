@@ -3,27 +3,13 @@ name = "core"
 source = "path+from-root-BD9159206068AEC6"
 
 [[package]]
-name = "guild-pin-contract"
+name = "guild-pin-fuel"
 source = "member"
 dependencies = [
     "src_20",
     "src_3",
     "std",
 ]
-
-[[package]]
-name = "guild-pin-token-contract"
-source = "member"
-dependencies = [
-    "src_20",
-    "src_3",
-    "std",
-]
-
-[[package]]
-name = "guild-pin-treasury-contract"
-source = "member"
-dependencies = ["std"]
 
 [[package]]
 name = "src_20"
