@@ -1,6 +1,2 @@
 [workspace]
-members = [
-    "./pin",
-    "./token",
-    "./treasury",
-]
+members = ["./pin", "./token", "./treasury"]
