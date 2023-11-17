@@ -22,10 +22,11 @@ use std::{
 configurable {
     NAME: str[9] = __to_str_array("Guild Pin"),
     SYMBOL: str[5] = __to_str_array("GUILD"),
+    OWNER: Identity = Identity::Address(Address::from(ZERO_B256)),
 }
 
 storage {
-    owner: Ownership = Ownership::initialized(Identity::Address(Address::from(ZERO_B256))),
+    owner: Ownership = Ownership::initialized(OWNER),
     /// Quick O(1) access to an user's balance
     balances: StorageMap<Identity, u64> = StorageMap {},
     /// Returns the owner of a token with a given ID. None, if
