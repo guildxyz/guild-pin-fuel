@@ -152,6 +152,11 @@ impl SRC20 for Contract {
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        storage.owner.read().state
+        let state = storage.owner.read().state;
+        // TODO replace this with something more minimal?
+        // OWNER needs to occur in the impl blocks as well, otherwise
+        // it gets optimized away but we need it in the storage ffs
+        require(state == State::Initialized(OWNER), "invalid state");
+        state
     }
 }
