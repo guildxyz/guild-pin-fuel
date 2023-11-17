@@ -44,22 +44,41 @@ impl SRC3 for Contract {
     fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
         // TODO this doesn't work for some reason (cannot find the method)
         //storage.owner.only_owner();
-        require(storage.owner.read().state == State::Initialized(msg_sender().unwrap()), AccessError::NotOwner);
+        require(
+            storage
+                .owner
+                .read()
+                .state == State::Initialized(msg_sender().unwrap()),
+            AccessError::NotOwner,
+        );
         require(amount == 1, "Minting multiple assets is forbidden");
         require(sub_id == ZERO_B256, "Incorrect Sub Id");
 
         let total_minted = storage.total_minted.read();
 
         // this should never happen in theory but add check just to be safe
-        require(storage.owners.get(total_minted).read().is_none(), "token has already been minted once");
+        require(
+            storage
+                .owners
+                .get(total_minted)
+                .read()
+                .is_none(),
+            "token has already been minted once",
+        );
 
         // mint only to this contract, otherwise users would be able to transfer the tokens
         mint(ZERO_B256, amount);
-        storage.balances.insert(recipient, storage.balances.get(recipient).read() + amount);
+        storage
+            .balances
+            .insert(recipient, storage.balances.get(recipient).read() + amount);
         storage.owners.insert(total_minted, Some(recipient));
 
-        storage.total_supply.write(storage.total_supply.read() + amount);
-        storage.total_minted.write(storage.total_supply.read() + amount);
+        storage
+            .total_supply
+            .write(storage.total_supply.read() + amount);
+        storage
+            .total_minted
+            .write(storage.total_supply.read() + amount);
     }
 
     #[storage(read, write)]
@@ -67,7 +86,10 @@ impl SRC3 for Contract {
         // NOTE we are using amount for the token id
         let token_id = amount;
         require(sub_id == ZERO_B256, "Incorrect Sub Id");
-        require(msg_asset_id() == AssetId::default(contract_id()), "Incorrect asset provided");
+        require(
+            msg_asset_id() == AssetId::default(contract_id()),
+            "Incorrect asset provided",
+        );
         let maybe_token_owner = storage.owners.get(token_id).read();
         require(maybe_token_owner.is_some(), AccessError::NotOwner);
         let token_owner = maybe_token_owner.unwrap();

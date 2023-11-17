@@ -3,3 +3,9 @@ name = "guild-pin-contract"
 version = "0.0.0"
 authors = ["PopcornPaws"]
 edition = "2021"
+
+[[test]]
+harness = true
+name = "integration_tests"
+path = "tests/harness.rs"
+
