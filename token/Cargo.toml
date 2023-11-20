@@ -5,10 +5,10 @@ authors = ["PopcornPaws"]
 edition = "2021"
 
 [dev-dependencies]
-fuels = "0.50"
+fuels = "0.50" #{ path = "../../fuels-rs/packages/fuels" } #"0.50"
 tokio = { version = "1", default-features = false, features = ["rt", "macros"] }
 
 [[test]]
 harness = true
 name = "integration_tests"
-path = "tests/harness.rs"
+path = "tests/main.rs"

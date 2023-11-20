@@ -1,22 +1,23 @@
 use fuels::prelude::*;
-use fuels::types::Identity;
+use fuels::programs::call_response::FuelCallResponse;
+use fuels::types::{Bits256, Identity};
 
 const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-token-contract.bin";
-const CONTRACT_STORAGE_PATH: &str = "./out/debug/guld-pin-token-contract-storage_slots.json";
+const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-token-contract-storage_slots.json";
 
 abigen!(Contract(
     name = "GuildToken",
     abi = "./token/out/debug/guild-pin-token-contract-abi.json"
 ));
 
-pub struct TestSetup {
+pub struct TestContract {
     pub contract: GuildToken<WalletUnlocked>,
-    pub contract_owner: WalletUnlocked,
+    pub owner: WalletUnlocked,
     pub user_0: WalletUnlocked,
     pub user_1: WalletUnlocked,
 }
 
-impl TestSetup {
+impl TestContract {
     pub async fn new() -> Self {
         // configure wallets
         let number_of_wallets = 4;
@@ -59,9 +60,21 @@ impl TestSetup {
 
         Self {
             contract,
-            contract_owner: deployer_wallet,
+            owner: deployer_wallet,
             user_0: user_0_wallet,
             user_1: user_1_wallet,
         }
+    }
+
+    pub async fn mint(&self, owner: Address, recipient: Address) -> FuelCallResponse<()> {
+        self.contract
+            .methods()
+            .mint(Identity::Address(recipient), Bits256::zeroed(), 1)
+            .tx_params(TxParameters::default())
+            .call_params(CallParameters::default())
+            .unwrap()
+            .call()
+            .await
+            .unwrap()
     }
 }
