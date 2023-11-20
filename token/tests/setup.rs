@@ -57,6 +57,7 @@ impl TestContract {
             .unwrap();
 
         let contract = GuildToken::new(guild_token_contract_id, contract_wallet.clone());
+        contract.methods().initialize().call().await.unwrap();
 
         Self {
             contract,
@@ -66,8 +67,18 @@ impl TestContract {
         }
     }
 
-    pub async fn mint(&self, owner: Address, recipient: Address) -> FuelCallResponse<()> {
+    pub async fn owner(&self) -> Address {
+        let state = self.contract.methods().owner().call().await.unwrap().value;
+        match state {
+            State::Initialized(Identity::Address(address)) => address,
+            _ => panic!("expected an initialized owner address"),
+        }
+    }
+
+    pub async fn mint(&self, caller: &WalletUnlocked, recipient: Address) -> FuelCallResponse<()> {
         self.contract
+            .with_account(caller.clone())
+            .unwrap()
             .methods()
             .mint(Identity::Address(recipient), Bits256::zeroed(), 1)
             .tx_params(TxParameters::default())

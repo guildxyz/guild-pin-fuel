@@ -1,5 +1,7 @@
 contract;
 
+// TODO events, errors, metadata
+
 use ownership::Ownership;
 use src_20::SRC20;
 use src_3::SRC3;
@@ -26,7 +28,7 @@ configurable {
 }
 
 storage {
-    owner: Ownership = Ownership::initialized(OWNER),
+    owner: Ownership = Ownership::uninitialized(),
     /// Quick O(1) access to an user's balance
     balances: StorageMap<Identity, u64> = StorageMap {},
     /// Returns the owner of a token with a given ID. None, if
@@ -40,10 +42,30 @@ storage {
     total_minted: u64 = 0,
 }
 
+abi GuildPinToken {
+    #[storage(read, write)]
+    fn initialize();
+}
+
+impl GuildPinToken for Contract {
+    #[storage(read, write)]
+    fn initialize() {
+        // anyone can call this function but only once, until it's uninitialized
+        require(storage.owner.read().state == State::Uninitialized, "already initialized");
+        // This is required because we don't necessarily know the owner such that it can be baked
+        // into the code.
+        //
+        // However, we can set the owner via a configurable upon deployment, but it needs to be
+        // written to storage as well. That's why we call this method and write the configurable
+        // OWNER into storage here.
+        storage.owner.write(Ownership::initialized(OWNER));
+    }
+}
+
 impl SRC3 for Contract {
     #[storage(read, write)]
     fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
-        // TODO this doesn't work for some reason (cannot find the method)
+        // NOTE this doesn't work for some reason (cannot find the method)
         //storage.owner.only_owner();
         require(
             storage
@@ -152,11 +174,6 @@ impl SRC20 for Contract {
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        let state = storage.owner.read().state;
-        // TODO replace this with something more minimal?
-        // OWNER needs to occur in the impl blocks as well, otherwise
-        // it gets optimized away but we need it in the storage ffs
-        require(state == State::Initialized(OWNER), "invalid state");
-        state
+        storage.owner.read().state
     }
 }
