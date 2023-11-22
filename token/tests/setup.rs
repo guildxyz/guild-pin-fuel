@@ -88,4 +88,12 @@ impl TestContract {
             .await
             .unwrap()
     }
+
+    pub async fn balance(&self, of: Address) -> FuelCallResponse<u64> {
+        self.contract.methods().balance(Identity::Address(of)).call().await.unwrap()
+    }
+
+    pub async fn pin_owner(&self, pin_id: u64) -> FuelCallResponse<Option<Identity>> {
+        self.contract.methods().pin_owner(pin_id).call().await.unwrap()
+    }
 }

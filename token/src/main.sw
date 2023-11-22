@@ -5,7 +5,7 @@ contract;
 mod errors;
 mod events;
 
-use ::events::PinMinted;
+use ::events::{PinMinted, OwnerSet};
 use ::errors::Error;
 
 use ownership::Ownership;
@@ -51,6 +51,12 @@ storage {
 abi GuildPinToken {
     #[storage(read, write)]
     fn initialize();
+    #[storage(read, write)]
+    fn set_owner(new_owner: Identity);
+    #[storage(read)]
+    fn balance(of: Identity) -> u64;
+    #[storage(read)]
+    fn pin_owner(pin_id: u64) -> Option<Identity>;
 }
 
 impl GuildPinToken for Contract {
@@ -64,22 +70,49 @@ impl GuildPinToken for Contract {
         // However, we can set the owner via a configurable upon deployment, but it needs to be
         // written to storage as well. That's why we call this method and write the configurable
         // OWNER into storage here.
-        storage.owner.write(Ownership::initialized(OWNER));
+        _set_owner(OWNER)
+    }
+
+    #[storage(read, write)]
+    fn set_owner(owner: Identity) {
+        _only_owner(msg_sender().unwrap());
+        _set_owner(owner);
+    }
+
+    #[storage(read)]
+    fn balance(of: Identity) -> u64 {
+        storage.balances.get(of).try_read().unwrap_or(0)
+    }
+
+    #[storage(read)]
+    fn pin_owner(pin_id: u64) -> Option<Identity> {
+        storage.owners.get(pin_id).try_read().unwrap_or(None)
     }
 }
 
-impl SRC3 for Contract {
-    #[storage(read, write)]
-    fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
+#[storage(read)]
+fn _only_owner(caller: Identity) {
         // NOTE this doesn't work for some reason (cannot find the method)
         //storage.owner.only_owner();
         require(
             storage
                 .owner
                 .read()
-                .state == State::Initialized(msg_sender().unwrap()),
+                .state == State::Initialized(caller),
             AccessError::NotOwner,
         );
+}
+
+#[storage(write)]
+fn _set_owner(owner: Identity) {
+        storage.owner.write(Ownership::initialized(owner));
+        log(OwnerSet { owner });
+}
+
+impl SRC3 for Contract {
+    #[storage(read, write)]
+    fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
+        _only_owner(msg_sender().unwrap())
         require(amount == 1, Error::InvalidAmount);
         require(sub_id == ZERO_B256, Error::InvalidSubId);
 
@@ -87,28 +120,34 @@ impl SRC3 for Contract {
         let pin_id = storage.total_minted.read();
 
         // this should never happen in theory but add check just to be safe
-        //require(
-        //    storage
-        //        .owners
-        //        .get(pin_id)
-        //        .read()
-        //        .is_none(),
-        //        Error::AlreadyMinted,
-        //);
+        require(
+            storage
+                .owners
+                .get(pin_id)
+                .try_read()
+                .is_none(),
+                Error::AlreadyMinted,
+        );
 
         // mint only to this contract, otherwise users would be able to transfer the tokens
-        //mint(ZERO_B256, amount);
+        mint(ZERO_B256, amount);
+        
+        // increment balance of recipient
+        let balance = storage.balances.get(recipient).try_read().unwrap_or(0);
         storage
             .balances
-            .insert(recipient, storage.balances.get(recipient).read() + amount);
+            .insert(recipient,  balance + amount);
+        // assign recipient as owner to the pin_id
         storage.owners.insert(pin_id, Some(recipient));
-
+        // increment total supply
         storage
             .total_supply
             .write(storage.total_supply.read() + amount);
+        // increment total minted
         storage
             .total_minted
-            .write(storage.total_supply.read() + amount);
+            .write(storage.total_minted.read() + amount);
+        // emit event
         log(PinMinted {
             recipient,
             pin_id,
