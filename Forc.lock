@@ -25,7 +25,11 @@ dependencies = [
 [[package]]
 name = "guild-pin-treasury-contract"
 source = "member"
-dependencies = ["std"]
+dependencies = [
+    "ownership",
+    "src_5",
+    "std",
+]
 
 [[package]]
 name = "ownership"

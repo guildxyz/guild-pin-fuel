@@ -5,7 +5,7 @@ contract;
 mod errors;
 mod events;
 
-use ::events::{OwnerSet, PinBurned, PinMinted};
+use ::events::{ContractInitialized, OwnerSet, PinBurned, PinMinted};
 use ::errors::TokenError;
 
 use ownership::Ownership;
@@ -18,7 +18,6 @@ use std::{
         msg_asset_id,
     },
     constants::ZERO_B256,
-    context::msg_amount,
     hash::Hash,
     string::String,
     token::{
@@ -78,13 +77,15 @@ impl GuildPinToken for Contract {
         // However, we can set the owner via a configurable upon deployment, but it needs to be
         // written to storage as well. That's why we call this method and write the configurable
         // OWNER into storage here.
-        _set_owner(OWNER)
+        storage.owner.write(Ownership::initialized(OWNER));
+        log(ContractInitialized { owner: OWNER })
     }
 
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
         _only_owner(msg_sender().unwrap());
-        _set_owner(owner);
+        storage.owner.write(Ownership::initialized(owner));
+        log(OwnerSet { owner });
     }
 
     #[storage(read)]
@@ -250,10 +251,4 @@ fn _only_owner(caller: Identity) {
             .state == State::Initialized(caller),
         AccessError::NotOwner,
     );
-}
-
-#[storage(write)]
-fn _set_owner(owner: Identity) {
-    storage.owner.write(Ownership::initialized(owner));
-    log(OwnerSet { owner });
 }

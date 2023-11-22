@@ -57,7 +57,14 @@ impl TestContract {
             .unwrap();
 
         let contract = GuildToken::new(guild_token_contract_id, contract_wallet.clone());
-        contract.methods().initialize().call().await.unwrap();
+        let response = contract.methods().initialize().call().await.unwrap();
+        let events = response.decode_logs_with_type::<ContractInitialized>().unwrap();
+        assert_eq!(
+            events,
+            vec![ContractInitialized {
+                owner: Identity::Address(deployer_wallet.address().into())
+            }]
+        );
 
         Self {
             contract,
