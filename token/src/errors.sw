@@ -1,12 +1,11 @@
 library;
 
-pub enum Error {
+pub enum TokenError {
     AlreadyInitialized: (),
     AlreadyMinted: (),
+    AlreadyBurned: (),
     InvalidAmount: (),
     InvalidSubId: (),
     InvalidAssetId: (),
-    Debug0: u64,
-    Debug1: (),
-    Debug2: (),
+    PinIdDoesNotExist: (),
 }
