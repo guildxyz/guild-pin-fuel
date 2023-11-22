@@ -5,7 +5,7 @@ contract;
 mod errors;
 mod events;
 
-use ::events::{PinMinted, OwnerSet};
+use ::events::{OwnerSet, PinMinted};
 use ::errors::Error;
 
 use ownership::Ownership;
@@ -63,7 +63,13 @@ impl GuildPinToken for Contract {
     #[storage(read, write)]
     fn initialize() {
         // anyone can call this function but only once, until it's uninitialized
-        require(storage.owner.read().state == State::Uninitialized, Error::AlreadyInitialized);
+        require(
+            storage
+                .owner
+                .read()
+                .state == State::Uninitialized,
+            Error::AlreadyInitialized,
+        );
         // This is required because we don't necessarily know the owner such that it can be baked
         // into the code.
         //
@@ -92,27 +98,27 @@ impl GuildPinToken for Contract {
 
 #[storage(read)]
 fn _only_owner(caller: Identity) {
-        // NOTE this doesn't work for some reason (cannot find the method)
-        //storage.owner.only_owner();
-        require(
-            storage
-                .owner
-                .read()
-                .state == State::Initialized(caller),
-            AccessError::NotOwner,
-        );
+    // NOTE this doesn't work for some reason (cannot find the method)
+    //storage.owner.only_owner();
+    require(
+        storage
+            .owner
+            .read()
+            .state == State::Initialized(caller),
+        AccessError::NotOwner,
+    );
 }
 
 #[storage(write)]
 fn _set_owner(owner: Identity) {
-        storage.owner.write(Ownership::initialized(owner));
-        log(OwnerSet { owner });
+    storage.owner.write(Ownership::initialized(owner));
+    log(OwnerSet { owner });
 }
 
 impl SRC3 for Contract {
     #[storage(read, write)]
     fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
-        _only_owner(msg_sender().unwrap())
+        _only_owner(msg_sender().unwrap());
         require(amount == 1, Error::InvalidAmount);
         require(sub_id == ZERO_B256, Error::InvalidSubId);
 
@@ -126,17 +132,15 @@ impl SRC3 for Contract {
                 .get(pin_id)
                 .try_read()
                 .is_none(),
-                Error::AlreadyMinted,
+            Error::AlreadyMinted,
         );
 
         // mint only to this contract, otherwise users would be able to transfer the tokens
         mint(ZERO_B256, amount);
-        
+
         // increment balance of recipient
         let balance = storage.balances.get(recipient).try_read().unwrap_or(0);
-        storage
-            .balances
-            .insert(recipient,  balance + amount);
+        storage.balances.insert(recipient, balance + amount);
         // assign recipient as owner to the pin_id
         storage.owners.insert(pin_id, Some(recipient));
         // increment total supply
@@ -161,7 +165,7 @@ impl SRC3 for Contract {
         require(sub_id == ZERO_B256, Error::InvalidSubId);
         require(
             msg_asset_id() == AssetId::default(contract_id()),
-            Error::InvalidAssetId
+            Error::InvalidAssetId,
         );
         let maybe_token_owner = storage.owners.get(pin_id).read();
         require(maybe_token_owner.is_some(), AccessError::NotOwner);
