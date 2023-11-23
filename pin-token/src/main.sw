@@ -2,13 +2,13 @@ contract;
 
 // TODO metadata SRC-7
 
-mod errors;
-mod events;
 mod interfaces;
 
-use ::events::{ContractInitialized, OwnerSet, PinBurned, PinMinted};
-use ::errors::TokenError;
-use ::interfaces::src5::{only_owner, SetOwner};
+use ::interfaces::info::*;
+use ::interfaces::init::*;
+use ::interfaces::src3::*;
+use ::interfaces::src5::*;
+use ::interfaces::src20::*;
 
 use ownership::Ownership;
 use src_20::SRC20;
@@ -49,61 +49,31 @@ storage {
     total_supply: u64 = 0,
     /// Only incremented
     total_minted: u64 = 0,
+    /// Dummy key to make warnings disappear
+    warning: bool = false,
 }
 
 abi GuildPinToken {
     #[storage(read, write)]
-    fn initialize();
-    #[storage(read, write)]
     fn set_metadata(metadata: TokenUri);
-    #[storage(read)]
-    fn balance(of: Identity) -> u64;
-    #[storage(read)]
-    fn pin_owner(pin_id: u64) -> Option<Identity>;
-    #[storage(read)]
-    fn total_minted() -> u64;
 }
 
 impl GuildPinToken for Contract {
     #[storage(read, write)]
-    fn initialize() {
-        // anyone can call this function but only once, until it's uninitialized
-        require(
-            storage
-                .owner
-                .read()
-                .state == src_5::State::Uninitialized,
-            TokenError::AlreadyInitialized,
-        );
-        // This is required because we don't necessarily know the owner such that it can be baked
-        // into the code.
-        //
-        // However, we can set the owner via a configurable upon deployment, but it needs to be
-        // written to storage as well. That's why we call this method and write the configurable
-        // OWNER into storage here.
-        storage.owner.write(Ownership::initialized(OWNER));
-        log(ContractInitialized { owner: OWNER })
-    }
-
-    #[storage(read, write)]
     fn set_metadata(metadata: TokenUri) {
         revert(0)
     }
+}
 
+impl Info for Contract {
     #[storage(read)]
     fn balance(of: Identity) -> u64 {
-        storage.balances.get(of).try_read().unwrap_or(0)
+        _balance(of, storage.balances)
     }
 
     #[storage(read)]
     fn pin_owner(pin_id: u64) -> Option<Identity> {
-        let maybe_owner = storage.owners.get(pin_id).try_read();
-        if let Some(owner) = maybe_owner {
-            owner
-        } else {
-            require(false, TokenError::PinIdDoesNotExist);
-            revert(155)
-        }
+        _pin_owner(pin_id, storage.owners)
     }
 
     #[storage(read)]
@@ -112,129 +82,85 @@ impl GuildPinToken for Contract {
     }
 }
 
+impl Initialize for Contract {
+    #[storage(read, write)]
+    fn initialize() {
+        _initialize(OWNER, storage.owner)
+    }
+}
+
 impl SRC3 for Contract {
     #[storage(read, write)]
-    fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
-        only_owner(storage.owner);
-        require(amount == 1, TokenError::InvalidAmount);
-        require(sub_id == ZERO_B256, TokenError::InvalidSubId);
-        require(
-            msg_asset_id() == AssetId::default(contract_id()),
-            TokenError::InvalidAssetId,
-        );
-
-        // use total minted for a unique id
-        let pin_id = storage.total_minted.read();
-
-        // this should never happen in theory but add check just to be safe
-        require(
-            storage
-                .owners
-                .get(pin_id)
-                .try_read()
-                .is_none(),
-            TokenError::AlreadyMinted,
-        );
-
-        // mint only to this contract, otherwise users would be able to transfer the tokens
-        mint(ZERO_B256, amount);
-
-        // increment balance of recipient
-        let balance = storage.balances.get(recipient).try_read().unwrap_or(0);
-        storage.balances.insert(recipient, balance + amount);
-        // assign recipient as owner to the pin_id
-        storage.owners.insert(pin_id, Some(recipient));
-        // increment total supply
-        storage
-            .total_supply
-            .write(storage.total_supply.read() + amount);
-        // increment total minted
-        storage
-            .total_minted
-            .write(storage.total_minted.read() + amount);
-        // emit event
-        log(PinMinted {
+    fn mint(recipient: Identity, _sub_id: SubId, _amount: u64) {
+        _mint(
             recipient,
-            pin_id,
-        });
+            storage
+                .total_minted,
+            storage
+                .total_supply,
+            storage
+                .balances,
+            storage
+                .owners,
+        )
     }
 
     #[storage(read, write)]
-    fn burn(sub_id: SubId, amount: u64) {
-        // NOTE we are using amount for the token id
-        let pin_id = amount;
-        require(sub_id == ZERO_B256, TokenError::InvalidSubId);
-        require(
-            msg_asset_id() == AssetId::default(contract_id()),
-            TokenError::InvalidAssetId,
-        );
-        let pin_owner = match storage.owners.get(pin_id).try_read() {
-            Some(Some(pin_owner)) => {
-                require(msg_sender().unwrap() == pin_owner, AccessError::NotOwner);
-                pin_owner
-            },
-            Some(None) => {
-                require(false, TokenError::AlreadyBurned);
-                revert(12)
-            },
-            None => {
-                require(false, TokenError::PinIdDoesNotExist);
-                revert(13)
-            }
-        };
-
-        let balance = storage.balances.get(pin_owner).read();
-        storage.balances.insert(pin_owner, balance - 1);
-        // Decrement total supply of the asset and burn.
-        storage.total_supply.write(storage.total_supply.read() - 1);
-        storage.owners.insert(pin_id, None);
-
-        burn(ZERO_B256, amount);
-
-        log(PinBurned {
-            pin_owner,
+    fn burn(_sub_id: SubId, pin_id: u64) {
+        // NOTE we are using amount as pin_id
+        _burn(
             pin_id,
-        })
+            storage
+                .total_supply,
+            storage
+                .balances,
+            storage
+                .owners,
+        )
     }
 }
 
 impl SRC20 for Contract {
     #[storage(read)]
     fn total_assets() -> u64 {
-        interfaces::src20::total_assets()
+        let _ = storage.warning.read();
+        _total_assets()
     }
 
     #[storage(read)]
     fn total_supply(asset: AssetId) -> Option<u64> {
-        interfaces::src20::total_supply(asset, storage.total_supply)
+        _total_supply(asset, storage.total_supply)
     }
 
     #[storage(read)]
     fn name(asset: AssetId) -> Option<String> {
-        interfaces::src20::name(asset, NAME)
+        let _ = storage.warning.read();
+        _name(asset, NAME)
     }
 
     #[storage(read)]
     fn symbol(asset: AssetId) -> Option<String> {
-        interfaces::src20::symbol(asset, SYMBOL)
+        let _ = storage.warning.read();
+        _symbol(asset, SYMBOL)
     }
 
     #[storage(read)]
     fn decimals(asset: AssetId) -> Option<u8> {
-        interfaces::src20::decimals(asset)
+        let _ = storage.warning.read();
+        _decimals(asset)
     }
 }
 
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        interfaces::src5::owner(storage.owner)
+        _owner(storage.owner)
     }
 }
 
 impl SetOwner for Contract {
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
-        interfaces::src5::set_owner(owner, storage.owner)
+        _set_owner(owner, storage.owner)
     }
 }

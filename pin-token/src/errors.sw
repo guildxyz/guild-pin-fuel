@@ -1,11 +1,5 @@
 library;
 
-pub enum TokenError {
+pub enum ContractError {
     AlreadyInitialized: (),
-    AlreadyMinted: (),
-    AlreadyBurned: (),
-    InvalidAmount: (),
-    InvalidSubId: (),
-    InvalidAssetId: (),
-    PinIdDoesNotExist: (),
 }

@@ -15,7 +15,7 @@ pub struct OwnerSet {
 }
 
 #[storage(read, write)]
-pub fn set_owner(owner: Identity, key: StorageKey<Ownership>) {
+pub fn _set_owner(owner: Identity, key: StorageKey<Ownership>) {
     let caller = only_owner(key);
     key.write(Ownership::initialized(owner));
     log(OwnerSet {
@@ -25,7 +25,7 @@ pub fn set_owner(owner: Identity, key: StorageKey<Ownership>) {
 }
 
 #[storage(read)]
-pub fn owner(key: StorageKey<Ownership>) -> State {
+pub fn _owner(key: StorageKey<Ownership>) -> State {
     key.read().state
 }
 
@@ -35,7 +35,7 @@ pub fn only_owner(key: StorageKey<Ownership>) -> Identity {
     // compiler cannot find the method...
     let caller = msg_sender().unwrap();
     require(
-        owner(key) == State::Initialized(caller),
+        _owner(key) == State::Initialized(caller),
         AccessError::NotOwner,
     );
     caller
