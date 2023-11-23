@@ -4,15 +4,18 @@ contract;
 
 mod errors;
 mod events;
+mod interfaces;
 
 use ::events::{ContractInitialized, OwnerSet, PinBurned, PinMinted};
 use ::errors::TokenError;
+use ::interfaces::src5::{only_owner, SetOwner};
 
-use guild_pin_common::TokenUri;
 use ownership::Ownership;
 use src_20::SRC20;
 use src_3::SRC3;
 use src_5::{AccessError, SRC5, State};
+
+use guild_pin_common::TokenUri;
 use std::{
     call_frames::{
         contract_id,
@@ -52,8 +55,6 @@ abi GuildPinToken {
     #[storage(read, write)]
     fn initialize();
     #[storage(read, write)]
-    fn set_owner(owner: Identity);
-    #[storage(read, write)]
     fn set_metadata(metadata: TokenUri);
     #[storage(read)]
     fn balance(of: Identity) -> u64;
@@ -71,7 +72,7 @@ impl GuildPinToken for Contract {
             storage
                 .owner
                 .read()
-                .state == State::Uninitialized,
+                .state == src_5::State::Uninitialized,
             TokenError::AlreadyInitialized,
         );
         // This is required because we don't necessarily know the owner such that it can be baked
@@ -82,17 +83,6 @@ impl GuildPinToken for Contract {
         // OWNER into storage here.
         storage.owner.write(Ownership::initialized(OWNER));
         log(ContractInitialized { owner: OWNER })
-    }
-
-    #[storage(read, write)]
-    fn set_owner(owner: Identity) {
-        let old_owner = msg_sender().unwrap();
-        _only_owner(old_owner);
-        storage.owner.write(Ownership::initialized(owner));
-        log(OwnerSet {
-            old: old_owner,
-            new: owner,
-        });
     }
 
     #[storage(read, write)]
@@ -125,7 +115,7 @@ impl GuildPinToken for Contract {
 impl SRC3 for Contract {
     #[storage(read, write)]
     fn mint(recipient: Identity, sub_id: SubId, amount: u64) {
-        _only_owner(msg_sender().unwrap());
+        only_owner(storage.owner);
         require(amount == 1, TokenError::InvalidAmount);
         require(sub_id == ZERO_B256, TokenError::InvalidSubId);
         require(
@@ -211,62 +201,40 @@ impl SRC3 for Contract {
 impl SRC20 for Contract {
     #[storage(read)]
     fn total_assets() -> u64 {
-        1
+        interfaces::src20::total_assets()
     }
 
     #[storage(read)]
     fn total_supply(asset: AssetId) -> Option<u64> {
-        if asset == AssetId::default(contract_id()) {
-            Some(storage.total_supply.read())
-        } else {
-            None
-        }
+        interfaces::src20::total_supply(asset, storage.total_supply)
     }
 
     #[storage(read)]
     fn name(asset: AssetId) -> Option<String> {
-        if asset == AssetId::default(contract_id()) {
-            Some(String::from_ascii_str(from_str_array(NAME)))
-        } else {
-            None
-        }
+        interfaces::src20::name(asset, NAME)
     }
 
     #[storage(read)]
     fn symbol(asset: AssetId) -> Option<String> {
-        if asset == AssetId::default(contract_id()) {
-            Some(String::from_ascii_str(from_str_array(SYMBOL)))
-        } else {
-            None
-        }
+        interfaces::src20::symbol(asset, SYMBOL)
     }
 
     #[storage(read)]
     fn decimals(asset: AssetId) -> Option<u8> {
-        if asset == AssetId::default(contract_id()) {
-            Some(0)
-        } else {
-            None
-        }
+        interfaces::src20::decimals(asset)
     }
 }
 
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        storage.owner.read().state
+        interfaces::src5::owner(storage.owner)
     }
 }
 
-#[storage(read)]
-fn _only_owner(caller: Identity) {
-    // NOTE this doesn't work for some reason (cannot find the method)
-    //storage.owner.only_owner();
-    require(
-        storage
-            .owner
-            .read()
-            .state == State::Initialized(caller),
-        AccessError::NotOwner,
-    );
+impl SetOwner for Contract {
+    #[storage(read, write)]
+    fn set_owner(owner: Identity) {
+        interfaces::src5::set_owner(owner, storage.owner)
+    }
 }
