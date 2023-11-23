@@ -4,7 +4,11 @@ version = "0.0.0"
 authors = ["PopcornPaws"]
 edition = "2021"
 
+[dev-dependencies]
+fuels = { workspace = true }
+tokio = { workspace = true }
+
 [[test]]
 harness = true
 name = "integration_tests"
-path = "tests/harness.rs"
+path = "tests/main.rs"

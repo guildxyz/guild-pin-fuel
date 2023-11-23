@@ -26,7 +26,7 @@ async fn contract_initialized() {
 #[tokio::test]
 async fn mint_success() {
     let contract = TestContract::new().await;
-    let recipient: Address = contract.user_0.address().into();
+    let recipient: Address = contract.account_0.address().into();
     let recipient_id = Identity::Address(recipient);
 
     // check initial storage
@@ -59,14 +59,14 @@ async fn mint_success() {
 async fn mint_failure() {
     let contract = TestContract::new().await;
     let response = contract
-        .mint(&contract.user_1, contract.user_1.address().into())
+        .mint(&contract.account_1, contract.account_1.address().into())
         .await;
     check_error(response.unwrap_err(), "NotOwner");
 
     let response = contract
         .unsafe_mint(
             &contract.owner,
-            contract.user_1.address().into(),
+            contract.account_1.address().into(),
             Bits256::zeroed(),
             2,
         )
@@ -76,7 +76,7 @@ async fn mint_failure() {
     let response = contract
         .unsafe_mint(
             &contract.owner,
-            contract.user_1.address().into(),
+            contract.account_1.address().into(),
             Bits256([1u8; 32]),
             1,
         )
@@ -87,20 +87,26 @@ async fn mint_failure() {
 #[tokio::test]
 async fn set_owner() {
     let contract = TestContract::new().await;
-    let user_0: Address = contract.user_0.address().into();
-    let user_1: Address = contract.user_0.address().into();
-    contract.set_owner(&contract.owner, user_0).await.unwrap();
-    assert_eq!(contract.owner().await, user_0);
-    let response = contract.set_owner(&contract.owner, user_1).await;
+    let account_0: Address = contract.account_0.address().into();
+    let account_1: Address = contract.account_1.address().into();
+    contract
+        .set_owner(&contract.owner, account_0)
+        .await
+        .unwrap();
+    assert_eq!(contract.owner().await, account_0);
+    let response = contract.set_owner(&contract.owner, account_1).await;
     check_error(response.unwrap_err(), "NotOwner");
-    let response = contract.set_owner(&contract.user_0, user_1).await.unwrap();
-    assert_eq!(contract.owner().await, user_1);
+    let response = contract
+        .set_owner(&contract.account_0, account_1)
+        .await
+        .unwrap();
+    assert_eq!(contract.owner().await, account_1);
     let events = response.decode_logs_with_type::<OwnerSet>().unwrap();
     assert_eq!(
         events,
         vec![OwnerSet {
-            old: Identity::Address(user_0),
-            new: Identity::Address(user_1)
+            old: Identity::Address(account_0),
+            new: Identity::Address(account_1)
         }]
     );
 }
@@ -108,8 +114,8 @@ async fn set_owner() {
 #[tokio::test]
 async fn burn_success() {
     let contract = TestContract::new().await;
-    let recipient_0: Address = contract.user_0.address().into();
-    let recipient_1: Address = contract.user_1.address().into();
+    let recipient_0: Address = contract.account_0.address().into();
+    let recipient_1: Address = contract.account_1.address().into();
     let recipient_id_0 = Identity::Address(recipient_0);
     let recipient_id_1 = Identity::Address(recipient_1);
 
@@ -133,8 +139,8 @@ async fn burn_success() {
     assert_eq!(contract.total_supply().await, 5);
     assert_eq!(contract.total_minted().await, 5);
 
-    // user_0 burns their first pin
-    let response = contract.burn(&contract.user_0, 0).await.unwrap();
+    // account_0 burns their first pin
+    let response = contract.burn(&contract.account_0, 0).await.unwrap();
     let events = response.decode_logs_with_type::<PinBurned>().unwrap();
     assert_eq!(
         events,
@@ -144,8 +150,8 @@ async fn burn_success() {
         }]
     );
 
-    // user_1 burns their last pin
-    let response = contract.burn(&contract.user_1, 4).await.unwrap();
+    // account_1 burns their last pin
+    let response = contract.burn(&contract.account_1, 4).await.unwrap();
     let events = response.decode_logs_with_type::<PinBurned>().unwrap();
     assert_eq!(
         events,
@@ -181,19 +187,19 @@ async fn burn_success() {
 #[tokio::test]
 async fn burn_failure() {
     let contract = TestContract::new().await;
-    let recipient: Address = contract.user_0.address().into();
+    let recipient: Address = contract.account_0.address().into();
 
     contract.mint(&contract.owner, recipient).await.unwrap();
 
     let response = contract.burn(&contract.owner, 0).await;
     check_error(response.unwrap_err(), "NotOwner");
 
-    let response = contract.burn(&contract.user_0, 1).await;
+    let response = contract.burn(&contract.account_0, 1).await;
     check_error(response.unwrap_err(), "PinIdDoesNotExist");
 
-    contract.burn(&contract.user_0, 0).await.unwrap();
+    contract.burn(&contract.account_0, 0).await.unwrap();
 
-    let response = contract.burn(&contract.user_0, 0).await;
+    let response = contract.burn(&contract.account_0, 0).await;
     check_error(response.unwrap_err(), "AlreadyBurned");
 }
 
