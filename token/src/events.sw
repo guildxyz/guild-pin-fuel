@@ -15,5 +15,6 @@ pub struct PinBurned {
 }
 
 pub struct OwnerSet {
-    owner: Identity,
+    old: Identity,
+    new: Identity,
 }

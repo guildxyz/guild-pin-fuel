@@ -4,7 +4,7 @@ mod errors;
 mod events;
 
 use ::errors::TreasuryError;
-use ::events::ContractInitialized;
+use ::events::{ContractInitialized, FeeSet, OwnerSet, TreasurySet};
 
 use ownership::Ownership;
 use src_5::{AccessError, SRC5, State};
@@ -25,11 +25,22 @@ storage {
 abi GuildPinTreasury {
     #[storage(read, write)]
     fn initialize();
+    #[storage(read, write)]
+    fn set_owner(owner: Identity);
+    #[storage(read, write)]
+    fn set_fee(fee: u64);
+    #[storage(read, write)]
+    fn set_treasury(treasury: Identity);
+    #[storage(read)]
+    fn fee() -> u64;
+    #[storage(read)]
+    fn treasury() -> Identity;
 }
 
 impl GuildPinTreasury for Contract {
     #[storage(read, write)]
     fn initialize() {
+        // anyone can call this function, but only once
         require(
             storage
                 .owner
@@ -46,6 +57,48 @@ impl GuildPinTreasury for Contract {
             treasury: TREASURY,
             fee: FEE,
         });
+    }
+    #[storage(read, write)]
+    fn set_owner(owner: Identity) {
+        let old_owner = msg_sender().unwrap();
+        _only_owner(old_owner);
+        storage.owner.write(Ownership::initialized(owner));
+        log(OwnerSet {
+            old: old_owner,
+            new: owner,
+        })
+    }
+
+    #[storage(read, write)]
+    fn set_fee(fee: u64) {
+        _only_owner(msg_sender().unwrap());
+        let old_fee = storage.fee.read();
+        storage.fee.write(fee);
+        log(FeeSet {
+            old: old_fee,
+            new: fee,
+        })
+    }
+
+    #[storage(read, write)]
+    fn set_treasury(treasury: Identity) {
+        _only_owner(msg_sender().unwrap());
+        let old_treasury = storage.treasury.read();
+        storage.treasury.write(treasury);
+        log(TreasurySet {
+            old: old_treasury,
+            new: treasury,
+        })
+    }
+
+    #[storage(read)]
+    fn fee() -> u64 {
+        storage.fee.read()
+    }
+
+    #[storage(read)]
+    fn treasury() -> Identity {
+        storage.treasury.read()
     }
 }
 

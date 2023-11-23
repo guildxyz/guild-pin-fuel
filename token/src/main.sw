@@ -83,9 +83,13 @@ impl GuildPinToken for Contract {
 
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
-        _only_owner(msg_sender().unwrap());
+        let old_owner = msg_sender().unwrap();
+        _only_owner(old_owner);
         storage.owner.write(Ownership::initialized(owner));
-        log(OwnerSet { owner });
+        log(OwnerSet {
+            old: old_owner,
+            new: owner,
+        });
     }
 
     #[storage(read)]

@@ -2,7 +2,7 @@ mod setup;
 
 use fuels::prelude::AssetId;
 use fuels::types::{errors::Error, Address, Bits256, Identity};
-use setup::{PinMinted, PinBurned, TestContract};
+use setup::{OwnerSet, PinBurned, PinMinted, TestContract};
 
 fn check_error(error: Error, expected: &str) {
     match error {
@@ -93,8 +93,16 @@ async fn set_owner() {
     assert_eq!(contract.owner().await, user_0);
     let response = contract.set_owner(&contract.owner, user_1).await;
     check_error(response.unwrap_err(), "NotOwner");
-    contract.set_owner(&contract.user_0, user_1).await.unwrap();
+    let response = contract.set_owner(&contract.user_0, user_1).await.unwrap();
     assert_eq!(contract.owner().await, user_1);
+    let events = response.decode_logs_with_type::<OwnerSet>().unwrap();
+    assert_eq!(
+        events,
+        vec![OwnerSet {
+            old: Identity::Address(user_0),
+            new: Identity::Address(user_1)
+        }]
+    );
 }
 
 #[tokio::test]
