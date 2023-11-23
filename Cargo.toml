@@ -1,9 +1,9 @@
 [workspace]
 resolver = "2"
 members = [
-    "./pin",
-    "./token",
-    "./treasury",
+    "./pin-contract",
+    "./pin-token",
+    "./pin-treasury",
 ]
 
 [workspace.dependencies]

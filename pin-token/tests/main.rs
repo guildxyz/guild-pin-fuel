@@ -30,18 +30,18 @@ async fn mint_success() {
     let recipient_id = Identity::Address(recipient);
 
     // check initial storage
-    let balance = contract.balance(recipient).await.value;
+    let balance = contract.balance(recipient).await;
     assert_eq!(balance, 0);
-    let pin_owner = contract.pin_owner(0).await.value;
-    assert!(pin_owner.is_none());
+    let result = contract.pin_owner(0).await;
+    check_error(result.unwrap_err(), "PinIdDoesNotExist");
 
     // mint token
     let response = contract.mint(&contract.owner, recipient).await.unwrap();
 
     // check modified storage
-    let balance = contract.balance(recipient).await.value;
+    let balance = contract.balance(recipient).await;
     assert_eq!(balance, 1);
-    let pin_owner = contract.pin_owner(0).await.value;
+    let pin_owner = contract.pin_owner(0).await.unwrap().value;
     assert_eq!(pin_owner.as_ref(), Some(&recipient_id));
 
     // check emitted events
@@ -125,16 +125,16 @@ async fn burn_success() {
     contract.mint(&contract.owner, recipient_0).await.unwrap();
     contract.mint(&contract.owner, recipient_1).await.unwrap();
 
-    let balance = contract.balance(recipient_0).await.value;
+    let balance = contract.balance(recipient_0).await;
     assert_eq!(balance, 3);
-    let balance = contract.balance(recipient_1).await.value;
+    let balance = contract.balance(recipient_1).await;
     assert_eq!(balance, 2);
-    let pin_owner = contract.pin_owner(0).await.value;
+    let pin_owner = contract.pin_owner(0).await.unwrap().value;
     assert_eq!(pin_owner.as_ref(), Some(&recipient_id_0));
-    let pin_owner = contract.pin_owner(4).await.value;
+    let pin_owner = contract.pin_owner(4).await.unwrap().value;
     assert_eq!(pin_owner.as_ref(), Some(&recipient_id_1));
-    let pin_owner = contract.pin_owner(5).await.value;
-    assert!(pin_owner.is_none());
+    let result = contract.pin_owner(5).await;
+    check_error(result.unwrap_err(), "PinIdDoesNotExist");
 
     assert_eq!(contract.total_supply().await, 5);
     assert_eq!(contract.total_minted().await, 5);
@@ -164,13 +164,13 @@ async fn burn_success() {
     assert_eq!(contract.total_supply().await, 3);
     assert_eq!(contract.total_minted().await, 5);
 
-    let balance = contract.balance(recipient_0).await.value;
+    let balance = contract.balance(recipient_0).await;
     assert_eq!(balance, 2);
-    let balance = contract.balance(recipient_1).await.value;
+    let balance = contract.balance(recipient_1).await;
     assert_eq!(balance, 1);
-    let pin_owner = contract.pin_owner(0).await.value;
+    let pin_owner = contract.pin_owner(0).await.unwrap().value;
     assert!(pin_owner.is_none());
-    let pin_owner = contract.pin_owner(4).await.value;
+    let pin_owner = contract.pin_owner(4).await.unwrap().value;
     assert!(pin_owner.is_none());
 
     contract.mint(&contract.owner, recipient_1).await.unwrap();
@@ -178,9 +178,9 @@ async fn burn_success() {
     assert_eq!(contract.total_supply().await, 4);
     assert_eq!(contract.total_minted().await, 6);
 
-    let balance = contract.balance(recipient_0).await.value;
+    let balance = contract.balance(recipient_0).await;
     assert_eq!(balance, 2);
-    let balance = contract.balance(recipient_1).await.value;
+    let balance = contract.balance(recipient_1).await;
     assert_eq!(balance, 2);
 }
 

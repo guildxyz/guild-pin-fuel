@@ -7,7 +7,7 @@ const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-token-contract-storag
 
 abigen!(Contract(
     name = "GuildToken",
-    abi = "./token/out/debug/guild-pin-token-contract-abi.json"
+    abi = "./pin-token/out/debug/guild-pin-token-contract-abi.json"
 ));
 
 pub struct TestContract {
@@ -153,22 +153,18 @@ impl TestContract {
             .await
     }
 
-    pub async fn balance(&self, of: Address) -> FuelCallResponse<u64> {
+    pub async fn balance(&self, of: Address) -> u64 {
         self.contract
             .methods()
             .balance(Identity::Address(of))
             .call()
             .await
             .unwrap()
+            .value
     }
 
-    pub async fn pin_owner(&self, pin_id: u64) -> FuelCallResponse<Option<Identity>> {
-        self.contract
-            .methods()
-            .pin_owner(pin_id)
-            .call()
-            .await
-            .unwrap()
+    pub async fn pin_owner(&self, pin_id: u64) -> Result<FuelCallResponse<Option<Identity>>> {
+        self.contract.methods().pin_owner(pin_id).call().await
     }
 
     pub async fn total_supply(&self) -> u64 {

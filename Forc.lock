@@ -3,11 +3,16 @@ name = "core"
 source = "path+from-root-AC247AEA3D39B916"
 
 [[package]]
+name = "guild-pin-common"
+source = "member"
+dependencies = ["std"]
+
+[[package]]
 name = "guild-pin-contract"
 source = "member"
 dependencies = [
-    "src_20 git+https://github.com/FuelLabs/sway-standards?rev#29cb3a4ad318d847b17936c245b525c1bee3382d",
-    "src_3 git+https://github.com/FuelLabs/sway-standards?rev#29cb3a4ad318d847b17936c245b525c1bee3382d",
+    "ownership",
+    "src_5",
     "std",
 ]
 
@@ -15,9 +20,10 @@ dependencies = [
 name = "guild-pin-token-contract"
 source = "member"
 dependencies = [
+    "guild-pin-common",
     "ownership",
-    "src_20 git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d",
-    "src_3 git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d",
+    "src_20",
+    "src_3",
     "src_5",
     "std",
 ]
@@ -41,17 +47,7 @@ dependencies = [
 
 [[package]]
 name = "src_20"
-source = "git+https://github.com/FuelLabs/sway-standards?rev#29cb3a4ad318d847b17936c245b525c1bee3382d"
-dependencies = ["std"]
-
-[[package]]
-name = "src_20"
 source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d"
-dependencies = ["std"]
-
-[[package]]
-name = "src_3"
-source = "git+https://github.com/FuelLabs/sway-standards?rev#29cb3a4ad318d847b17936c245b525c1bee3382d"
 dependencies = ["std"]
 
 [[package]]

@@ -1,6 +1,6 @@
 contract;
 
-// TODO metadata
+// TODO metadata SRC-7
 
 mod errors;
 mod events;
@@ -8,6 +8,7 @@ mod events;
 use ::events::{ContractInitialized, OwnerSet, PinBurned, PinMinted};
 use ::errors::TokenError;
 
+use guild_pin_common::TokenUri;
 use ownership::Ownership;
 use src_20::SRC20;
 use src_3::SRC3;
@@ -39,8 +40,8 @@ storage {
     /// Returns the owner of a token with a given ID. None, if
     /// the token has already been burned.
     owners: StorageMap<u64, Option<Identity>> = StorageMap {},
-    // TODO
-    //metadata: StorageMap<u64, TokenMetadata> = StorageMap {},
+    /// Metadata attached to a
+    metadata: StorageMap<u64, TokenUri> = StorageMap {},
     /// Incremented upon mint, decremented upon burn
     total_supply: u64 = 0,
     /// Only incremented
@@ -51,7 +52,9 @@ abi GuildPinToken {
     #[storage(read, write)]
     fn initialize();
     #[storage(read, write)]
-    fn set_owner(new_owner: Identity);
+    fn set_owner(owner: Identity);
+    #[storage(read, write)]
+    fn set_metadata(metadata: TokenUri);
     #[storage(read)]
     fn balance(of: Identity) -> u64;
     #[storage(read)]
@@ -92,6 +95,11 @@ impl GuildPinToken for Contract {
         });
     }
 
+    #[storage(read, write)]
+    fn set_metadata(metadata: TokenUri) {
+        revert(0)
+    }
+
     #[storage(read)]
     fn balance(of: Identity) -> u64 {
         storage.balances.get(of).try_read().unwrap_or(0)
@@ -99,7 +107,13 @@ impl GuildPinToken for Contract {
 
     #[storage(read)]
     fn pin_owner(pin_id: u64) -> Option<Identity> {
-        storage.owners.get(pin_id).try_read().unwrap_or(None)
+        let maybe_owner = storage.owners.get(pin_id).try_read();
+        if let Some(owner) = maybe_owner {
+            owner
+        } else {
+            require(false, TokenError::PinIdDoesNotExist);
+            revert(155)
+        }
     }
 
     #[storage(read)]
