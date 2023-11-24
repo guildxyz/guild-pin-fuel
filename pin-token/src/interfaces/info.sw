@@ -1,5 +1,6 @@
 library;
 
+use guild_pin_common::GuildAction;
 use ::interfaces::token::TokenError;
 
 use std::hash::Hash;
@@ -11,6 +12,11 @@ abi Info {
     fn pin_owner(pin_id: u64) -> Option<Identity>;
     #[storage(read)]
     fn total_minted() -> u64;
+    #[storage(read)]
+    fn has_claimed_by_address(user: Address, action: GuildAction, guild_id: u64) -> bool;
+    #[storage(read)]
+    fn has_claimed_by_id(user_id: u64, action: GuildAction, guild_id: u64) -> bool;
+    // TODO token uri?
 }
 
 #[storage(read)]

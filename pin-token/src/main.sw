@@ -34,10 +34,13 @@ configurable {
     NAME: str[9] = __to_str_array("Guild Pin"),
     SYMBOL: str[5] = __to_str_array("GUILD"),
     OWNER: Identity = Identity::Address(Address::from(ZERO_B256)),
+    TREASURY: Identity::ContractId(ContractId::from(ZERO_B256)),
+    SIGNER: 
 }
 
 storage {
     owner: Ownership = Ownership::uninitialized(),
+    treasury: Identity = TREASURY,
     /// Quick O(1) access to an user's balance
     balances: StorageMap<Identity, u64> = StorageMap {},
     /// Returns the owner of a token with a given ID. None, if
@@ -53,12 +56,19 @@ storage {
     warning: bool = false,
 }
 
-abi GuildPinToken {
+abi GuildPin {
+    #[storage(read, write)]
+    fn claim();
+    #[storage(read, write)]
+    fn set_cid();
     #[storage(read, write)]
     fn set_metadata(metadata: TokenUri);
+    #[storage(read, write)]
+    fn set_signer(metadata: TokenUri);
 }
 
-impl GuildPinToken for Contract {
+/*
+impl GuildPin for Contract {
     #[storage(read, write)]
     fn set_metadata(metadata: TokenUri) {
         revert(0)
@@ -88,6 +98,7 @@ impl Initialize for Contract {
         _initialize(OWNER, storage.owner)
     }
 }
+*/
 
 impl SRC3 for Contract {
     #[storage(read, write)]
