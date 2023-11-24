@@ -6,9 +6,9 @@ mod interfaces;
 
 use ::interfaces::info::*;
 use ::interfaces::init::*;
-use ::interfaces::src3::*;
-use ::interfaces::src5::*;
+use ::interfaces::owner::*;
 use ::interfaces::src20::*;
+use ::interfaces::token::*;
 
 use ownership::Ownership;
 use src_20::SRC20;

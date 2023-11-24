@@ -1,6 +1,6 @@
 library;
 
-use ::interfaces::src3::TokenError;
+use ::interfaces::token::TokenError;
 
 use std::hash::Hash;
 
