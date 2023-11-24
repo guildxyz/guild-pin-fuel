@@ -16,31 +16,28 @@ use src_3::SRC3;
 use src_5::{AccessError, SRC5, State};
 
 use guild_pin_common::TokenUri;
-use std::{
-    call_frames::{
-        contract_id,
-        msg_asset_id,
-    },
-    constants::ZERO_B256,
-    hash::Hash,
-    string::String,
-    token::{
-        burn,
-        mint,
-    },
-};
+use std::constants::ZERO_B256;
+use std::hash::Hash;
+use std::string::String;
+use std::vm::evm::evm_address::EvmAddress;
 
+// NOTE EvmAddress cannot be const initialized 
+// https://github.com/FuelLabs/sway/issues/4967
+//
+// I also cannot use [u8; 20] because arrays in storage
+// has not been implemented yet
 configurable {
     NAME: str[9] = __to_str_array("Guild Pin"),
     SYMBOL: str[5] = __to_str_array("GUILD"),
     OWNER: Identity = Identity::Address(Address::from(ZERO_B256)),
-    TREASURY: Identity::ContractId(ContractId::from(ZERO_B256)),
-    SIGNER: 
+    TREASURY: Identity = Identity::ContractId(ContractId::from(ZERO_B256)),
+    SIGNER: b256 = ZERO_B256,
 }
 
 storage {
     owner: Ownership = Ownership::uninitialized(),
-    treasury: Identity = TREASURY,
+    treasury: Identity = Identity::ContractId(ContractId::from(ZERO_B256)),
+    signer: b256 = ZERO_B256,
     /// Quick O(1) access to an user's balance
     balances: StorageMap<Identity, u64> = StorageMap {},
     /// Returns the owner of a token with a given ID. None, if
@@ -56,49 +53,22 @@ storage {
     warning: bool = false,
 }
 
-abi GuildPin {
-    #[storage(read, write)]
-    fn claim();
-    #[storage(read, write)]
-    fn set_cid();
-    #[storage(read, write)]
-    fn set_metadata(metadata: TokenUri);
-    #[storage(read, write)]
-    fn set_signer(metadata: TokenUri);
-}
-
-/*
-impl GuildPin for Contract {
-    #[storage(read, write)]
-    fn set_metadata(metadata: TokenUri) {
-        revert(0)
-    }
-}
-
-impl Info for Contract {
-    #[storage(read)]
-    fn balance(of: Identity) -> u64 {
-        _balance(of, storage.balances)
-    }
-
-    #[storage(read)]
-    fn pin_owner(pin_id: u64) -> Option<Identity> {
-        _pin_owner(pin_id, storage.owners)
-    }
-
-    #[storage(read)]
-    fn total_minted() -> u64 {
-        storage.total_minted.read()
-    }
-}
-
 impl Initialize for Contract {
     #[storage(read, write)]
     fn initialize() {
-        _initialize(OWNER, storage.owner)
+        _initialize(
+            OWNER,
+            storage
+                .owner,
+            TREASURY,
+            storage
+                .treasury,
+            SIGNER,
+            storage
+                .signer,
+        )
     }
 }
-*/
 
 impl SRC3 for Contract {
     #[storage(read, write)]

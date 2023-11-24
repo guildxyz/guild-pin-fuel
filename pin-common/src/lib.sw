@@ -26,6 +26,8 @@ pub struct PinDataParams {
     gulid_name: String,
     guild_or_role_id: u64,
     created_at: u64,
+    signed_at: u64,
+    cid: String,
 }
 
 pub struct TokenUri {
