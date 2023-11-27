@@ -3,8 +3,10 @@ contract;
 mod interfaces;
 
 use ::interfaces::init::*;
+use ::interfaces::owner::*;
 
 use ownership::Ownership;
+use src_5::State;
 
 use std::constants::ZERO_B256;
 use std::vm::evm::evm_address::EvmAddress;
@@ -41,5 +43,43 @@ impl Initialize for Contract {
             fee: storage.fee,
         };
         _initialize(params, keys);
+    }
+}
+
+impl OnlyOwner for Contract {
+    #[storage(read, write)]
+    fn set_owner(owner: Identity) {
+        _set_owner(owner, storage.owner)
+    }
+    #[storage(read, write)]
+    fn set_signer(signer: EvmAddress) {
+        _set_signer(signer, storage.signer, storage.owner)
+    }
+    #[storage(read, write)]
+    fn set_treasury(treasury: Identity) {
+        _set_treasury(treasury, storage.treasury, storage.owner)
+    }
+    #[storage(read, write)]
+    fn set_fee(fee: u64) {
+        _set_fee(fee, storage.fee, storage.owner)
+    }
+}
+
+impl OwnerInfo for Contract {
+    #[storage(read)]
+    fn owner() -> State {
+        _owner(storage.owner)
+    }
+    #[storage(read)]
+    fn signer() -> EvmAddress {
+        _signer(storage.signer)
+    }
+    #[storage(read)]
+    fn treasury() -> Identity {
+        _treasury(storage.treasury)
+    }
+    #[storage(read)]
+    fn fee() -> u64 {
+        _fee(storage.fee)
     }
 }

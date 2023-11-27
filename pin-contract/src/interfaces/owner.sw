@@ -5,7 +5,7 @@ use src_5::{AccessError, State};
 
 use std::vm::evm::evm_address::EvmAddress;
 
-abi OwnerControl {
+abi OnlyOwner {
     #[storage(read, write)]
     fn set_owner(owner: Identity);
     #[storage(read, write)]

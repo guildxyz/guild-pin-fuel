@@ -1,7 +1,7 @@
 mod contract;
 mod init;
+mod owner;
 mod parameters;
-
 
 use fuels::types::errors::Error;
 
