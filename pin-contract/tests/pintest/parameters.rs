@@ -1,5 +1,5 @@
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
-use fuels::types::Bits256;
+use fuels::types::{Bits256, EvmAddress, Identity};
 use signrs::eth::EthSigner;
 
 pub struct Parameters {
@@ -43,5 +43,17 @@ impl Parameters {
         let mut b256 = Bits256::zeroed();
         b256.0[..20].copy_from_slice(&self.signer.address());
         b256
+    }
+
+    pub fn signer_evm(&self) -> EvmAddress {
+        EvmAddress::from(self.signer_b256())
+    }
+
+    pub fn owner_id(&self) -> Identity {
+        Identity::Address(self.owner.address().into())
+    }
+
+    pub fn treasury_id(&self) -> Identity {
+        Identity::Address(self.treasury.address().into())
     }
 }

@@ -44,12 +44,12 @@ impl GuildPinContract {
     }
 
     pub async fn initialize(&self, caller: &WalletUnlocked) -> Result<FuelCallResponse<()>> {
-        self.contract
+        self.0
             .with_account(caller.clone())
             .unwrap()
             .methods()
             .initialize()
-            .call
+            .call()
             .await
     }
 }
