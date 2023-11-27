@@ -2,8 +2,8 @@
 resolver = "2"
 members = [
     "./pin-contract",
-    "./pin-token",
-    "./pin-treasury",
+    #"./pin-token",
+    #"./pin-treasury",
 ]
 
 [workspace.dependencies]

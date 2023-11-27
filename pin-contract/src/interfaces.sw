@@ -1,4 +1,4 @@
 library;
 
-pub mod info;
-pub mod foo;
+pub mod init;
+pub mod owner;
