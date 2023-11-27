@@ -6,6 +6,7 @@ edition = "2021"
 
 [dev-dependencies]
 fuels = { workspace = true }
+signrs = { git = "https://github.com/agoraxyz/signrs", features = ["eth"] }
 tokio = { workspace = true }
 
 [[test]]
