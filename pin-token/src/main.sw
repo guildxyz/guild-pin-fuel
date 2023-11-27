@@ -56,48 +56,20 @@ storage {
 impl Initialize for Contract {
     #[storage(read, write)]
     fn initialize() {
-        _initialize(
-            OWNER,
-            storage
-                .owner,
-            TREASURY,
-            storage
-                .treasury,
-            SIGNER,
-            storage
-                .signer,
-        )
+        _initialize(OWNER, storage.owner, TREASURY, storage.treasury, SIGNER, storage.signer)
     }
 }
 
 impl SRC3 for Contract {
     #[storage(read, write)]
     fn mint(recipient: Identity, _sub_id: SubId, _amount: u64) {
-        _mint(
-            recipient,
-            storage
-                .total_minted,
-            storage
-                .total_supply,
-            storage
-                .balances,
-            storage
-                .owners,
-        )
+        _mint(recipient, storage.total_minted, storage.total_supply, storage.balances, storage.owners)
     }
 
     #[storage(read, write)]
     fn burn(_sub_id: SubId, pin_id: u64) {
         // NOTE we are using amount as pin_id
-        _burn(
-            pin_id,
-            storage
-                .total_supply,
-            storage
-                .balances,
-            storage
-                .owners,
-        )
+        _burn(pin_id, storage.total_supply, storage.balances, storage.owners)
     }
 }
 

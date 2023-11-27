@@ -32,12 +32,7 @@ pub fn _initialize(
     signer_key: StorageKey<b256>,
 ) {
     // anyone can call this function but only once, until it's uninitialized
-    require(
-        owner_key
-            .read()
-            .state == State::Uninitialized,
-        InitError::AlreadyInitialized,
-    );
+    require(owner_key.read().state == State::Uninitialized, InitError::AlreadyInitialized);
     require(treasury.is_contract_id(), InitError::InvalidTreasury);
     // NOTE cannot check this because current std version can't find this
     // method IDK

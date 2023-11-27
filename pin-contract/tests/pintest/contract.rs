@@ -3,7 +3,7 @@ use crate::parameters::Parameters;
 use fuels::prelude::*;
 use fuels::programs::call_response::FuelCallResponse;
 use fuels::types::errors::Error;
-use fuels::types::{Bits256, Identity};
+use fuels::types::{EvmAddress, Identity};
 
 const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
 const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
@@ -52,8 +52,7 @@ impl GuildPinContract {
 
     pub async fn initialize(&self, caller: &WalletUnlocked) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())
-            .unwrap()
+            .with_account(caller.clone())?
             .methods()
             .initialize()
             .call()
@@ -66,8 +65,7 @@ impl GuildPinContract {
         owner: Identity,
     ) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())
-            .unwrap()
+            .with_account(caller.clone())?
             .methods()
             .set_owner(owner)
             .call()
@@ -80,5 +78,53 @@ impl GuildPinContract {
             State::Initialized(owner) => Ok(owner),
             _ => Err(Error::InvalidData("NotInitialized".to_string())),
         }
+    }
+
+    pub async fn set_signer(
+        &self,
+        caller: &WalletUnlocked,
+        signer: EvmAddress,
+    ) -> Result<FuelCallResponse<()>> {
+        self.0
+            .with_account(caller.clone())?
+            .methods()
+            .set_signer(signer)
+            .call()
+            .await
+    }
+
+    pub async fn signer(&self) -> Result<EvmAddress> {
+        let inner = self.0.methods().signer().call().await?.value;
+        Ok(EvmAddress::from(inner))
+    }
+
+    pub async fn set_treasury(
+        &self,
+        caller: &WalletUnlocked,
+        treasury: Identity,
+    ) -> Result<FuelCallResponse<()>> {
+        self.0
+            .with_account(caller.clone())?
+            .methods()
+            .set_treasury(treasury)
+            .call()
+            .await
+    }
+
+    pub async fn treasury(&self) -> Result<Identity> {
+        Ok(self.0.methods().treasury().call().await?.value)
+    }
+
+    pub async fn set_fee(&self, caller: &WalletUnlocked, fee: u64) -> Result<FuelCallResponse<()>> {
+        self.0
+            .with_account(caller.clone())?
+            .methods()
+            .set_fee(fee)
+            .call()
+            .await
+    }
+
+    pub async fn fee(&self) -> Result<u64> {
+        Ok(self.0.methods().fee().call().await?.value)
     }
 }

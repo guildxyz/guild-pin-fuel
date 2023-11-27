@@ -32,11 +32,7 @@ pub fn _mint(
     owners_key: StorageKey<StorageMap<u64, Option<Identity>>>,
 ) {
     // only the contract itself may call this function
-    require(
-        msg_sender()
-            .unwrap() == Identity::ContractId(contract_id()),
-        TokenError::InvalidMinter,
-    );
+    require(msg_sender().unwrap() == Identity::ContractId(contract_id()), TokenError::InvalidMinter);
     // we can only mint a single token per call
     // mint only to this contract, otherwise users would be able to transfer the tokens
     mint(ZERO_B256, 1);

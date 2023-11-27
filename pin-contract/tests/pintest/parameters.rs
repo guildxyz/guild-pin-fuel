@@ -7,6 +7,7 @@ pub struct Parameters {
     pub owner: WalletUnlocked,
     pub treasury: WalletUnlocked,
     pub signer: EthSigner,
+    pub signer_alt: EthSigner,
     pub fee: u64,
     pub alice: WalletUnlocked,
     pub bob: WalletUnlocked,
@@ -32,6 +33,7 @@ impl Parameters {
             owner: wallets.pop().unwrap(),
             treasury: wallets.pop().unwrap(),
             signer: EthSigner::new(&[3u8; 32]),
+            signer_alt: EthSigner::new(&[19u8; 32]),
             fee,
             alice: wallets.pop().unwrap(),
             bob: wallets.pop().unwrap(),
@@ -45,8 +47,18 @@ impl Parameters {
         b256
     }
 
+    pub fn signer_alt_b256(&self) -> Bits256 {
+        let mut b256 = Bits256::zeroed();
+        b256.0[..20].copy_from_slice(&self.signer_alt.address());
+        b256
+    }
+
     pub fn signer_evm(&self) -> EvmAddress {
         EvmAddress::from(self.signer_b256())
+    }
+
+    pub fn signer_alt_evm(&self) -> EvmAddress {
+        EvmAddress::from(self.signer_alt_b256())
     }
 
     pub fn owner_id(&self) -> Identity {
@@ -55,5 +67,17 @@ impl Parameters {
 
     pub fn treasury_id(&self) -> Identity {
         Identity::Address(self.treasury.address().into())
+    }
+
+    pub fn alice_id(&self) -> Identity {
+        Identity::Address(self.alice.address().into())
+    }
+
+    pub fn bob_id(&self) -> Identity {
+        Identity::Address(self.bob.address().into())
+    }
+
+    pub fn charlie_id(&self) -> Identity {
+        Identity::Address(self.charlie.address().into())
     }
 }

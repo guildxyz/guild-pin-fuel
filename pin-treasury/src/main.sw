@@ -41,13 +41,7 @@ impl GuildPinTreasury for Contract {
     #[storage(read, write)]
     fn initialize() {
         // anyone can call this function, but only once
-        require(
-            storage
-                .owner
-                .read()
-                .state == State::Uninitialized,
-            TreasuryError::AlreadyInitialized,
-        );
+        require(storage.owner.read().state == State::Uninitialized, TreasuryError::AlreadyInitialized);
         storage.treasury.write(TREASURY);
         storage.fee.write(FEE);
         storage.owner.write(Ownership::initialized(OWNER));
@@ -113,11 +107,5 @@ impl SRC5 for Contract {
 fn _only_owner(caller: Identity) {
     // NOTE this doesn't work for some reason (cannot find the method)
     //storage.owner.only_owner();
-    require(
-        storage
-            .owner
-            .read()
-            .state == State::Initialized(caller),
-        AccessError::NotOwner,
-    );
+    require(storage.owner.read().state == State::Initialized(caller), AccessError::NotOwner);
 }

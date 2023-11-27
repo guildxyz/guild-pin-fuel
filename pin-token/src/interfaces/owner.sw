@@ -34,9 +34,6 @@ pub fn only_owner(key: StorageKey<Ownership>) -> Identity {
     // NOTE built-in storage.owner.only_owner() doesn't work
     // compiler cannot find the method...
     let caller = msg_sender().unwrap();
-    require(
-        _owner(key) == State::Initialized(caller),
-        AccessError::NotOwner,
-    );
+    require(_owner(key) == State::Initialized(caller), AccessError::NotOwner);
     caller
 }

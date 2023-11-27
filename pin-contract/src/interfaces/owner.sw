@@ -20,7 +20,7 @@ abi OwnerInfo {
     #[storage(read)]
     fn owner() -> State;
     #[storage(read)]
-    fn signer() -> EvmAddress;
+    fn signer() -> b256;
     #[storage(read)]
     fn treasury() -> Identity;
     #[storage(read)]
@@ -108,8 +108,9 @@ pub fn _owner(key: StorageKey<Ownership>) -> State {
 }
 
 #[storage(read)]
-pub fn _signer(key: StorageKey<b256>) -> EvmAddress {
-    EvmAddress::from(key.read())
+pub fn _signer(key: StorageKey<b256>) -> b256 {
+    // NOTE cannot return EvmAddress, because it gets added to the abi as a () type
+    key.read()
 }
 
 #[storage(read)]
@@ -129,9 +130,6 @@ fn _only_owner(key: StorageKey<Ownership>) -> Identity {
     //
     // anyways, at least we can modify this to return the msg_sender() as well
     let caller = msg_sender().unwrap();
-    require(
-        _owner(key) == State::Initialized(caller),
-        AccessError::NotOwner,
-    );
+    require(_owner(key) == State::Initialized(caller), AccessError::NotOwner);
     caller
 }

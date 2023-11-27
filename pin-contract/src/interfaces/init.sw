@@ -32,12 +32,7 @@ abi Initialize {
 #[storage(read, write)]
 pub fn _initialize(params: ContractInitialized, keys: InitKeys) {
     // anyone can call this function but only once, until it's uninitialized
-    require(
-        keys.owner
-            .read()
-            .state == State::Uninitialized,
-        InitError::AlreadyInitialized,
-    );
+    require(keys.owner.read().state == State::Uninitialized, InitError::AlreadyInitialized);
     // NOTE cannot check this because current std version can't find this
     // method IDK
     //let signer_bytes = signer.to_le_bytes();

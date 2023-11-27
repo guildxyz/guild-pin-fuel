@@ -71,7 +71,7 @@ impl OwnerInfo for Contract {
         _owner(storage.owner)
     }
     #[storage(read)]
-    fn signer() -> EvmAddress {
+    fn signer() -> b256 {
         _signer(storage.signer)
     }
     #[storage(read)]
