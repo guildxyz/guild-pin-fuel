@@ -1394,22 +1394,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "guild-pin-token-contract"
-version = "0.0.0"
-dependencies = [
- "fuels",
- "tokio",
-]
-
-[[package]]
-name = "guild-pin-treasury-contract"
-version = "0.0.0"
-dependencies = [
- "fuels",
- "tokio",
-]
-
-[[package]]
 name = "h2"
 version = "0.3.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"

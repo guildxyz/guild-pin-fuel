@@ -10,5 +10,5 @@ tokio = { workspace = true }
 
 [[test]]
 harness = true
-name = "integration_tests"
-path = "tests/main.rs"
+name = "pintest"
+path = "tests/pintest/main.rs"
