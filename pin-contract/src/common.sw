@@ -1,0 +1,101 @@
+library;
+
+use std::bytes::Bytes;
+use std::hash::{Hash, Hasher};
+use std::string::String;
+
+pub type BalancesMap = StorageMap<Identity, u64>;
+pub type OwnersMap = StorageMap<u64, Option<Identity>>;
+pub type GuildIdActionTokenIdMap = StorageMap<u64, StorageMap<GuildAction, u64>>;
+pub type TokenIdByAddressMap = StorageMap<Identity, GuildIdActionTokenIdMap>;
+pub type TokenIdByUserIdMap = StorageMap<u64, StorageKey<GuildIdActionTokenIdMap>>;
+pub type TotalMintedPerGuildMap = StorageMap<u64, u64>;
+
+pub enum GuildAction {
+    Joined: (),
+    Owner: (),
+    Admin: (),
+}
+
+impl GuildAction {
+    pub fn into_byte(self) -> u8 {
+        match self {
+            GuildAction::Joined => 0,
+            GuildAction::Owner => 1,
+            GuildAction::Admin => 2,
+        }
+    }
+}
+
+impl Hash for GuildAction {
+    fn hash(self, ref mut state: Hasher) {
+        let mut bytes = Bytes::with_capacity(1);
+        bytes.push(self.into_byte());
+        state.write(bytes);
+    }
+}
+
+pub struct PinData {
+    holder: Address,
+    action: GuildAction,
+    user_id: u64,
+    guild_id: u64,
+    guild_name: String,
+    pin_number: u64,
+    mint_date: u64,
+    created_at: u64,
+}
+
+pub struct PinDataParams {
+    recipient: Address,
+    action: GuildAction,
+    user_id: u64,
+    guild_id: u64,
+    guild_name: String,
+    created_at: u64,
+    signed_at: u64,
+    cid: String,
+}
+
+impl Hash for PinDataParams {
+    fn hash(self, ref mut state: Hasher) {
+        self.recipient.hash(state);
+        self.action.hash(state);
+        self.user_id.hash(state);
+        self.guild_id.hash(state);
+        self.guild_name.as_bytes().hash(state);
+        self.created_at.hash(state);
+        self.signed_at.hash(state);
+        self.cid.as_bytes().hash(state);
+    }
+}
+
+impl PinDataParams {
+    pub fn to_message(self, treasury: Identity, fee: u64, contract_id: Identity) -> b256 {
+        let mut hasher = Hasher::new();
+        self.hash(hasher);
+        treasury.hash(hasher);
+        fee.hash(hasher);
+        contract_id.hash(hasher);
+        let keccak = hasher.keccak256();
+
+        let mut hasher = Hasher::new();
+        // TODO eth prefix
+        keccak.hash(hasher);
+        hasher.keccak256()
+    }
+}
+
+pub struct TokenUri {
+    name: GuildAction,
+    description: str[128],
+    image: str[128],
+    attributes: [Attribute; 4],
+}
+
+pub enum Attribute {
+    UserId: u64,
+    Rank: u64,
+    ActionDate: u64,
+    MintDate: u64,
+}

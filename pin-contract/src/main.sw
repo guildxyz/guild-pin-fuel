@@ -1,14 +1,18 @@
 contract;
 
+mod common;
 mod interfaces;
 
+use ::common::*;
 use ::interfaces::init::*;
 use ::interfaces::owner::*;
+use ::interfaces::token::*;
 
 use ownership::Ownership;
 use src_5::State;
 
 use std::constants::ZERO_B256;
+use std::hash::Hash;
 use std::vm::evm::evm_address::EvmAddress;
 
 configurable {
@@ -25,6 +29,13 @@ storage {
     signer: b256 = ZERO_B256,
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
     fee: u64 = FEE,
+    balances: BalancesMap = StorageMap {},
+    owners: OwnersMap = StorageMap {},
+    token_id_by_address: TokenIdByAddressMap = StorageMap {},
+    token_id_by_user_id: TokenIdByUserIdMap = StorageMap {},
+    total_minted_per_guild: TotalMintedPerGuildMap = StorageMap {},
+    total_minted: u64 = 0,
+    total_supply: u64 = 0,
 }
 
 impl Initialize for Contract {
