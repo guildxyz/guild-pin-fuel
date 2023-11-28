@@ -1,10 +1,15 @@
+#![warn(clippy::all)]
+#![warn(clippy::dbg_macro)]
+
 mod contract;
 mod fee;
 mod init;
+mod mint;
 mod owner;
 mod parameters;
 mod signer;
 mod treasury;
+mod utils;
 
 use fuels::core::traits::{Parameterize, Tokenizable};
 use fuels::programs::call_response::FuelCallResponse;

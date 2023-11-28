@@ -1,5 +1,7 @@
+use crate::contract::ClaimParameters;
+use crate::utils::hash_params;
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
-use fuels::types::{Bits256, EvmAddress, Identity};
+use fuels::types::{Bits256, EvmAddress, Identity, B512};
 use signrs::eth::EthSigner;
 
 pub struct Parameters {
@@ -80,4 +82,22 @@ impl Parameters {
     pub fn charlie_id(&self) -> Identity {
         Identity::Address(self.charlie.address().into())
     }
+
+    pub fn sign_claim(&self, params: &ClaimParameters) -> B512 {
+        _sign_claim(params, &self.signer)
+    }
+
+    pub fn sign_alt_claim(&self, params: &ClaimParameters) -> B512 {
+        _sign_claim(params, &self.signer_alt)
+    }
+}
+
+fn _sign_claim(params: &ClaimParameters, signer: &EthSigner) -> B512 {
+    let hashed_params = hash_params(params);
+    let signature = signer.sign(&hashed_params);
+    let mut hi = Bits256::zeroed();
+    let mut lo = Bits256::zeroed();
+    hi.0.copy_from_slice(&signature[0..32]);
+    lo.0.copy_from_slice(&signature[32..64]);
+    B512::from((hi, lo))
 }

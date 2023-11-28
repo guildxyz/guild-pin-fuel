@@ -6,6 +6,8 @@ edition = "2021"
 
 [dev-dependencies]
 fuels = "0.50"
+hex = "0.4"
+sha3 = "0.10"
 signrs = { git = "https://github.com/agoraxyz/signrs", features = ["eth"] }
 tokio = { version = "1", default-features = false, features = ["rt", "macros"] }
 

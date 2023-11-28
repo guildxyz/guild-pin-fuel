@@ -19,6 +19,7 @@ pub enum TokenError {
     ExpiredSignature: (),
     InvalidSignature: (),
     InvalidAssetId: (),
+    InvalidContractId: (),
     InsufficientAmount: (),
     PinIdDoesNotExist: (),
     NotPinOwner: (),
@@ -49,13 +50,9 @@ pub struct TokenKeys {
 }
 
 abi PinToken {
+    #[payable]
     #[storage(read, write)]
-    fn claim(
-        params: PinDataParams,
-        admin_treasury: Identity,
-        admin_fee: u64,
-        signature: B512,
-    );
+    fn claim(params: ClaimParameters, signature: B512);
     #[storage(read, write)]
     fn burn(pin_id: u64);
 }
@@ -75,9 +72,7 @@ abi PinInfo {
 
 #[storage(read, write)]
 pub fn _claim(
-    params: PinDataParams,
-    admin_treasury: Identity,
-    admin_fee: u64,
+    params: ClaimParameters,
     signature: B512,
     signature_validity_period: u64,
     token_keys: TokenKeys,
@@ -89,14 +84,7 @@ pub fn _claim(
     // TODO can anyone call this function if they have the params with a valid signature, or
     // does msg_sender() has to be the same as `params.recipient`
     // let caller = msg_sender().unwrap().as_address().unwrap();
-    let mint_date = _check_signature(
-        params,
-        admin_treasury,
-        admin_fee,
-        signature,
-        signature_validity_period,
-        init_keys,
-    );
+    let mint_date = _check_signature(params, signature, signature_validity_period, init_keys);
     require(
         !(_has_claimed_by_address(
             params
@@ -125,12 +113,14 @@ pub fn _claim(
     let asset_id = msg_asset_id();
     require(asset_id == BASE_ASSET_ID, TokenError::InvalidAssetId);
     require(
-        msg_amount() == admin_fee + fee,
+        msg_amount() == params
+            .admin_fee + fee,
         TokenError::InsufficientAmount,
     );
 
-    if admin_treasury != Identity::ContractId(contract_id()) {
-        transfer(admin_treasury, asset_id, admin_fee);
+    if params.admin_treasury != Identity::ContractId(contract_id())
+    {
+        transfer(params.admin_treasury, asset_id, params.admin_fee);
     }
     transfer(init_keys.treasury.read(), asset_id, fee);
 
@@ -223,13 +213,16 @@ pub fn _burn(pin_id: u64, token_keys: TokenKeys) {
 
 #[storage(read)]
 fn _check_signature(
-    params: PinDataParams,
-    admin_treasury: Identity,
-    admin_fee: u64,
+    params: ClaimParameters,
     signature: B512,
     signature_validity_period: u64,
     init_keys: InitKeys,
 ) -> u64 {
+    require(
+        params
+            .contract_id == contract_id(),
+        TokenError::InvalidContractId,
+    );
     let timestamp = now();
     // check signature expiration
     require(
@@ -240,8 +233,7 @@ fn _check_signature(
 
     // check signature validity
     let signer = EvmAddress::from(init_keys.signer.read());
-    let message = params.to_message(admin_treasury, admin_fee, contract_id());
-    let recovered = ec_recover_evm_address(signature, message).unwrap();
+    let recovered = ec_recover_evm_address(signature, params.to_message()).unwrap();
 
     require(signer == recovered, TokenError::InvalidSignature);
     timestamp

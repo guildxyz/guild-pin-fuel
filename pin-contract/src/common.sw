@@ -46,7 +46,7 @@ pub struct PinData {
     cid: str[64],
 }
 
-pub struct PinDataParams {
+pub struct ClaimParameters {
     recipient: Address,
     action: GuildAction,
     user_id: u64,
@@ -55,9 +55,12 @@ pub struct PinDataParams {
     created_at: u64,
     signed_at: u64,
     cid: str[64],
+    admin_treasury: Identity,
+    admin_fee: u64,
+    contract_id: ContractId,
 }
 
-impl Hash for PinDataParams {
+impl Hash for ClaimParameters {
     fn hash(self, ref mut state: Hasher) {
         self.recipient.hash(state);
         self.action.hash(state);
@@ -67,28 +70,22 @@ impl Hash for PinDataParams {
         self.created_at.hash(state);
         self.signed_at.hash(state);
         from_str_array(self.cid).hash(state);
+        self.admin_treasury.hash(state);
+        self.admin_fee.hash(state);
+        self.contract_id.hash(state);
     }
 }
 
-impl PinDataParams {
-    pub fn to_message(
-        self,
-        admin_treasury: Identity,
-        admin_fee: u64,
-        contract_id: ContractId,
-) -> b256 {
+impl ClaimParameters {
+    pub fn to_message(self) -> b256 {
         let mut hasher = Hasher::new();
         self.hash(hasher);
-        admin_treasury.hash(hasher);
-        admin_fee.hash(hasher);
-        contract_id.hash(hasher);
         let hashed_msg = hasher.keccak256();
 
         // hash again with ETH prefix
         let mut hasher = Hasher::new();
-        // NOTE msg len will always be 32 bytes due to hashing stuff first
-        "\x19Ethereum Signed Message:\n".hash(hasher);
-        32u8.hash(hasher);
+        // NOTE msg len will always be 32 bytes due to keccak256-hashing stuff first
+        "\x19Ethereum Signed Message:\n32".hash(hasher);
         hashed_msg.hash(hasher);
         hasher.keccak256()
     }

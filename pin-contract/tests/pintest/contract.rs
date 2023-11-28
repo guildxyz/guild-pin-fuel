@@ -2,8 +2,9 @@ use crate::parameters::Parameters;
 
 use fuels::prelude::*;
 use fuels::programs::call_response::FuelCallResponse;
+use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
-use fuels::types::{EvmAddress, Identity};
+use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
 const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
 const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
@@ -48,6 +49,10 @@ impl GuildPinContract {
         let contract = Self::new(parameters).await;
         contract.initialize(&parameters.owner).await.unwrap();
         contract
+    }
+
+    pub fn contract_id(&self) -> ContractId {
+        self.0.contract_id().into()
     }
 
     pub async fn initialize(&self, caller: &WalletUnlocked) -> Result<FuelCallResponse<()>> {
@@ -126,5 +131,38 @@ impl GuildPinContract {
 
     pub async fn fee(&self) -> Result<u64> {
         Ok(self.0.methods().fee().call().await?.value)
+    }
+
+    pub async fn claim(
+        &self,
+        caller: &WalletUnlocked,
+        params: ClaimParameters,
+        signature: B512,
+    ) -> Result<FuelCallResponse<()>> {
+        let total_fee = self.fee().await? + params.admin_fee;
+        let asset_id = AssetId::BASE;
+        self.unsafe_claim(caller, params, signature, total_fee, asset_id)
+            .await
+    }
+
+    pub async fn unsafe_claim(
+        &self,
+        caller: &WalletUnlocked,
+        params: ClaimParameters,
+        signature: B512,
+        total_fee: u64,
+        asset_id: AssetId,
+    ) -> Result<FuelCallResponse<()>> {
+        self.0
+            .with_account(caller.clone())?
+            .methods()
+            .claim(params, signature)
+            .call_params(
+                CallParameters::default()
+                    .with_asset_id(asset_id)
+                    .with_amount(total_fee),
+            )?
+            .call()
+            .await
     }
 }

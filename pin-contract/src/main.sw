@@ -99,13 +99,9 @@ impl OwnerInfo for Contract {
 }
 
 impl PinToken for Contract {
+    #[payable]
     #[storage(read, write)]
-    fn claim(
-        params: PinDataParams,
-        admin_treasury: Identity,
-        admin_fee: u64,
-        signature: B512,
-    ) {
+    fn claim(params: ClaimParameters, signature: B512) {
         let token_keys = TokenKeys {
             metadata: storage.metadata,
             balances: storage.balances,
@@ -125,8 +121,6 @@ impl PinToken for Contract {
         };
         _claim(
             params,
-            admin_treasury,
-            admin_fee,
             signature,
             SIGNATURE_VALIDITY_PERIOD,
             token_keys,

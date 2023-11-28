@@ -2033,6 +2033,8 @@ name = "guild-pin-contract"
 version = "0.0.0"
 dependencies = [
  "fuels",
+ "hex",
+ "sha3",
  "signrs",
  "tokio",
 ]
