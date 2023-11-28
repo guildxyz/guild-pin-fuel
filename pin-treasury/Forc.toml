@@ -1,9 +1,0 @@
-[project]
-authors = ["PopcornPaws"]
-entry = "main.sw"
-license = "Apache-2.0"
-name = "guild-pin-treasury-contract"
-
-[dependencies]
-ownership = { git = "https://github.com/FuelLabs/sway-libs", rev = "a585660" }
-src_5 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.2.0" }

@@ -5,9 +5,9 @@ authors = ["PopcornPaws"]
 edition = "2021"
 
 [dev-dependencies]
-fuels = { workspace = true }
+fuels = "0.50"
 signrs = { git = "https://github.com/agoraxyz/signrs", features = ["eth"] }
-tokio = { workspace = true }
+tokio = { version = "1", default-features = false, features = ["rt", "macros"] }
 
 [[test]]
 harness = true

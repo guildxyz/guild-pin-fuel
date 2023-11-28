@@ -10,7 +10,7 @@ const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slot
 
 abigen!(Contract(
     name = "GuildPin",
-    abi = "./pin-contract/out/debug/guild-pin-contract-abi.json"
+    abi = "./out/debug/guild-pin-contract-abi.json"
 ));
 
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);

@@ -1,7 +1,0 @@
-[workspace]
-members = [
-  "./pin-common",
-  "./pin-contract",
-  #"./pin-token",
-  #"./pin-treasury"
-]
