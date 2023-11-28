@@ -14,6 +14,20 @@ pub fn hash_params(params: &ClaimParameters) -> [u8; 32] {
     keccak256(&params_to_bytes(params))
 }
 
+// NOTE mimicking sway-lib-std/src/identity.sw hash impl
+fn hash_identity(identity: &Identity, bytes: &mut Vec<u8>) {
+    match identity {
+        Identity::Address(address) => {
+            bytes.push(0);
+            bytes.extend_from_slice(address.as_slice());
+        },
+        Identity::ContractId(contract_id) => {
+            bytes.push(1);
+            bytes.extend_from_slice(contract_id.as_slice());
+        },
+    }
+}
+
 fn params_to_bytes(params: &ClaimParameters) -> Vec<u8> {
     let mut bytes = Vec::new();
     bytes.extend_from_slice(params.recipient.as_slice());
@@ -24,7 +38,7 @@ fn params_to_bytes(params: &ClaimParameters) -> Vec<u8> {
     bytes.extend_from_slice(&params.created_at.to_be_bytes());
     bytes.extend_from_slice(&params.signed_at.to_be_bytes());
     bytes.extend_from_slice(params.cid.as_ref());
-    bytes.extend_from_slice(params.admin_treasury.as_ref());
+    hash_identity(&params.admin_treasury, &mut bytes);
     bytes.extend_from_slice(&params.admin_fee.to_be_bytes());
     bytes.extend_from_slice(params.contract_id.as_ref());
     bytes

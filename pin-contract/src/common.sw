@@ -1,6 +1,7 @@
 library;
 
 use std::bytes::Bytes;
+use std::constants::ZERO_B256;
 use std::hash::{Hash, Hasher};
 use std::string::String;
 
@@ -84,8 +85,12 @@ impl ClaimParameters {
 
         // hash again with ETH prefix
         let mut hasher = Hasher::new();
-        // NOTE msg len will always be 32 bytes due to keccak256-hashing stuff first
-        "\x19Ethereum Signed Message:\n32".hash(hasher);
+        // NOTE msg len will always be 32 bytes due to keccak256-hashing stuff first. Furthermore
+        // sway compiler cant handle \x19 and \n so I need to append special characters manually
+        25u8.hash(hasher); // \x19
+        "Ethereum Signed Message:".hash(hasher);
+        10u8.hash(hasher); // \n
+        "32".hash(hasher); // length
         hashed_msg.hash(hasher);
         hasher.keccak256()
     }

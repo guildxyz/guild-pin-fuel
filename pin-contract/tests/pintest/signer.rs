@@ -12,6 +12,7 @@ async fn set_signer_success() {
 
     let signer = contract.signer().await.unwrap();
     assert_eq!(signer, parameters.signer_evm());
+    assert_eq!(signer.value().0[..20], parameters.signer.address());
 
     let response = contract
         .set_signer(&parameters.owner, parameters.signer_alt_evm())

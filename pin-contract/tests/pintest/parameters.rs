@@ -3,6 +3,7 @@ use crate::utils::hash_params;
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
 use fuels::types::{Bits256, EvmAddress, Identity, B512};
 use signrs::eth::EthSigner;
+use signrs::eth::hash_eth_message;
 
 pub struct Parameters {
     pub contract: WalletUnlocked,
@@ -94,6 +95,8 @@ impl Parameters {
 
 fn _sign_claim(params: &ClaimParameters, signer: &EthSigner) -> B512 {
     let hashed_params = hash_params(params);
+    dbg!("{}", Bits256(hash_eth_message(hashed_params).into()));
+    dbg!("{}", hex::encode(signer.address()));
     let signature = signer.sign(&hashed_params);
     let mut hi = Bits256::zeroed();
     let mut lo = Bits256::zeroed();
