@@ -31,6 +31,7 @@ storage {
     signer: b256 = ZERO_B256,
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
     fee: u64 = FEE,
+    metadata: StorageMap<u64, PinData> = StorageMap {},
     balances: BalancesMap = StorageMap {},
     pin_owners: OwnersMap = StorageMap {},
     token_id_by_address: TokenIdByAddressMap = StorageMap {},
@@ -106,6 +107,7 @@ impl PinToken for Contract {
         signature: B512,
     ) {
         let token_keys = TokenKeys {
+            metadata: storage.metadata,
             balances: storage.balances,
             pin_owners: storage.pin_owners,
             token_id_by_address: storage.token_id_by_address,
@@ -133,8 +135,9 @@ impl PinToken for Contract {
     }
 
     #[storage(read, write)]
-    fn burn(token_id: u64) {
+    fn burn(pin_id: u64) {
         let token_keys = TokenKeys {
+            metadata: storage.metadata,
             balances: storage.balances,
             pin_owners: storage.pin_owners,
             token_id_by_address: storage.token_id_by_address,
@@ -143,6 +146,6 @@ impl PinToken for Contract {
             total_minted: storage.total_minted,
             total_supply: storage.total_supply,
         };
-        _burn(token_id, token_keys)
+        _burn(pin_id, token_keys)
     }
 }

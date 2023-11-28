@@ -1,7 +1,7 @@
 library;
 
 use ::common::*;
-use ::interfaces::init::InitKeys;
+use ::interfaces::init::{_initialized, InitKeys};
 
 use std::b512::B512;
 use std::block::timestamp as now;
@@ -9,16 +9,20 @@ use std::call_frames::{contract_id, msg_asset_id};
 use std::constants::{BASE_ASSET_ID, ZERO_B256};
 use std::context::msg_amount;
 use std::hash::Hash;
-use std::token::{mint, transfer};
+use std::token::{burn, mint, transfer};
 use std::vm::evm::ecr::ec_recover_evm_address;
 use std::vm::evm::evm_address::EvmAddress;
 
 pub enum TokenError {
     AlreadyClaimed: (),
+    AlreadyBurned: (),
     ExpiredSignature: (),
     InvalidSignature: (),
     InvalidAssetId: (),
     InsufficientAmount: (),
+    PinIdDoesNotExist: (),
+    NotPinOwner: (),
+    CouldNotRemoveEntry: (),
 }
 
 pub struct PinMinted {
@@ -26,9 +30,15 @@ pub struct PinMinted {
     pin_id: u64,
 }
 
+pub struct PinBurned {
+    pin_owner: Address,
+    pin_id: u64,
+}
+
 // NOTE can't use type aliases here either because the compiler can't find the respective methods
 // for type aliases
 pub struct TokenKeys {
+    metadata: StorageKey<StorageMap<u64, PinData>>,
     balances: StorageKey<StorageMap<Address, u64>>,
     pin_owners: StorageKey<StorageMap<u64, Option<Address>>>,
     token_id_by_address: StorageKey<StorageMap<Address, StorageMap<u64, StorageMap<GuildAction, u64>>>>,
@@ -47,7 +57,7 @@ abi PinToken {
         signature: B512,
     );
     #[storage(read, write)]
-    fn burn(token_id: u64);
+    fn burn(pin_id: u64);
 }
 
 abi PinInfo {
@@ -73,11 +83,13 @@ pub fn _claim(
     token_keys: TokenKeys,
     init_keys: InitKeys,
 ) {
+    // check if the contract is initialized
+    _initialized(init_keys.owner);
     // perform checks
     // TODO can anyone call this function if they have the params with a valid signature, or
     // does msg_sender() has to be the same as `params.recipient`
     // let caller = msg_sender().unwrap().as_address().unwrap();
-    _check_signature(
+    let mint_date = _check_signature(
         params,
         admin_treasury,
         admin_fee,
@@ -145,7 +157,18 @@ pub fn _claim(
         .token_id_by_user_id
         .insert(params.user_id, claims_map_key);
 
-    // TODO persist metadta
+    // persist token metadta
+    let metadata = PinData {
+        holder: params.recipient,
+        action: params.action,
+        user_id: params.user_id,
+        guild_id: params.guild_id,
+        guild_name: params.guild_name,
+        created_at: params.created_at,
+        cid: params.cid,
+        mint_date,
+    };
+    token_keys.metadata.insert(pin_id, metadata);
 
     // mint token
     mint(ZERO_B256, 1);
@@ -156,8 +179,46 @@ pub fn _claim(
 }
 
 #[storage(read, write)]
-pub fn _burn(token_id: u64, keys: TokenKeys) {
-    revert(124)
+pub fn _burn(pin_id: u64, token_keys: TokenKeys) {
+    // check ownership
+    let pin_owner = match token_keys.pin_owners.get(pin_id).try_read() {
+        Some(Some(pin_owner)) => {
+            require(
+                msg_sender()
+                    .unwrap() == Identity::Address(pin_owner),
+                TokenError::NotPinOwner,
+            );
+            pin_owner
+        },
+        Some(None) => {
+            require(false, TokenError::AlreadyBurned);
+            revert(0);
+        },
+        None => {
+            require(false, TokenError::PinIdDoesNotExist);
+            revert(0);
+        }
+    };
+
+    // update storage
+    let metadata = token_keys.metadata.get(pin_id).read();
+    let balance = token_keys.balances.get(pin_owner).read();
+    let total_supply = token_keys.total_supply.read();
+
+    token_keys.balances.insert(pin_owner, balance - 1);
+    token_keys.total_supply.write(total_supply - 1);
+    let removed = token_keys.metadata.remove(pin_id);
+    require(removed, TokenError::CouldNotRemoveEntry);
+    token_keys.pin_owners.insert(pin_id, None);
+    let removed = token_keys.token_id_by_address.get(pin_owner).get(metadata.guild_id).remove(metadata.action);
+    require(removed, TokenError::CouldNotRemoveEntry);
+
+    // burn token
+    burn(ZERO_B256, 1);
+    log(PinBurned {
+        pin_owner,
+        pin_id,
+    });
 }
 
 #[storage(read)]
@@ -168,11 +229,12 @@ fn _check_signature(
     signature: B512,
     signature_validity_period: u64,
     init_keys: InitKeys,
-) {
+) -> u64 {
+    let timestamp = now();
     // check signature expiration
     require(
         params
-            .signed_at < now() - signature_validity_period - 37,
+            .signed_at < timestamp - signature_validity_period - 37,
         TokenError::ExpiredSignature,
     );
 
@@ -182,6 +244,7 @@ fn _check_signature(
     let recovered = ec_recover_evm_address(signature, message).unwrap();
 
     require(signer == recovered, TokenError::InvalidSignature);
+    timestamp
 }
 
 // NOTE unfortunately I need to explicitly write out the map type, otherwise the compiler cries

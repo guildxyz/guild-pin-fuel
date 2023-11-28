@@ -40,10 +40,10 @@ pub struct PinData {
     action: GuildAction,
     user_id: u64,
     guild_id: u64,
-    guild_name: String,
-    pin_number: u64,
-    mint_date: u64,
+    guild_name: str[64],
     created_at: u64,
+    mint_date: u64,
+    cid: str[64],
 }
 
 pub struct PinDataParams {
@@ -51,10 +51,10 @@ pub struct PinDataParams {
     action: GuildAction,
     user_id: u64,
     guild_id: u64,
-    guild_name: String,
+    guild_name: str[64],
     created_at: u64,
     signed_at: u64,
-    cid: String,
+    cid: str[64],
 }
 
 impl Hash for PinDataParams {
@@ -63,10 +63,10 @@ impl Hash for PinDataParams {
         self.action.hash(state);
         self.user_id.hash(state);
         self.guild_id.hash(state);
-        self.guild_name.as_bytes().hash(state);
+        from_str_array(self.guild_name).hash(state);
         self.created_at.hash(state);
         self.signed_at.hash(state);
-        self.cid.as_bytes().hash(state);
+        from_str_array(self.cid).hash(state);
     }
 }
 
