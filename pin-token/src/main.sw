@@ -32,6 +32,7 @@ configurable {
     OWNER: Identity = Identity::Address(Address::from(ZERO_B256)),
     TREASURY: Identity = Identity::ContractId(ContractId::from(ZERO_B256)),
     SIGNER: b256 = ZERO_B256,
+    SIGNATURE_VALIDITY: u64 = 3600, // seconds
 }
 
 storage {

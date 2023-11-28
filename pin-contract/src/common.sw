@@ -71,17 +71,20 @@ impl Hash for PinDataParams {
 }
 
 impl PinDataParams {
-    pub fn to_message(self, treasury: Identity, fee: u64, contract_id: Identity) -> b256 {
+    pub fn to_message(self, admin_treasury: Identity, admin_fee: u64, contract_id: Identity) -> b256 {
         let mut hasher = Hasher::new();
         self.hash(hasher);
-        treasury.hash(hasher);
-        fee.hash(hasher);
+        admin_treasury.hash(hasher);
+        admin_fee.hash(hasher);
         contract_id.hash(hasher);
-        let keccak = hasher.keccak256();
+        let hashed_msg = hasher.keccak256();
 
+        // hash again with ETH prefix
         let mut hasher = Hasher::new();
-        // TODO eth prefix
-        keccak.hash(hasher);
+        // NOTE msg len will always be 32 bytes due to hashing stuff first
+        "\x19Ethereum Signed Message:\n".hash(hasher);
+        32u8.hash(hasher);
+        hashed_msg.hash(hasher);
         hasher.keccak256()
     }
 }

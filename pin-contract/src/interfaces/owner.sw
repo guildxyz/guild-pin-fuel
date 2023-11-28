@@ -130,6 +130,9 @@ fn _only_owner(key: StorageKey<Ownership>) -> Identity {
     //
     // anyways, at least we can modify this to return the msg_sender() as well
     let caller = msg_sender().unwrap();
-    require(_owner(key) == State::Initialized(caller), AccessError::NotOwner);
+    require(
+        _owner(key) == State::Initialized(caller),
+        AccessError::NotOwner,
+    );
     caller
 }
