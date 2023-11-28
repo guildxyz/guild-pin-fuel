@@ -46,13 +46,13 @@ impl Parameters {
 
     pub fn signer_b256(&self) -> Bits256 {
         let mut b256 = Bits256::zeroed();
-        b256.0[..20].copy_from_slice(&self.signer.address());
+        b256.0[12..].copy_from_slice(&self.signer.address());
         b256
     }
 
     pub fn signer_alt_b256(&self) -> Bits256 {
         let mut b256 = Bits256::zeroed();
-        b256.0[..20].copy_from_slice(&self.signer_alt.address());
+        b256.0[12..].copy_from_slice(&self.signer_alt.address());
         b256
     }
 

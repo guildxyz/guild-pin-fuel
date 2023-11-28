@@ -6,7 +6,7 @@ use fuels::types::{Identity, SizedAsciiString};
 const CID64: &str = "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyzabcdefghijklmn";
 
 #[tokio::test]
-async fn mint_successful() {
+async fn claim_successful() {
     let fee = 10;
     let parameters = Parameters::new(10).await;
     let contract = GuildPinContract::init(&parameters).await;

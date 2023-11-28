@@ -1,10 +1,10 @@
 #![warn(clippy::all)]
 #![warn(clippy::dbg_macro)]
 
+mod claim;
 mod contract;
 mod fee;
 mod init;
-mod mint;
 mod owner;
 mod parameters;
 mod signer;
