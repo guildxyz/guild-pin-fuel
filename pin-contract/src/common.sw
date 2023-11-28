@@ -4,10 +4,10 @@ use std::bytes::Bytes;
 use std::hash::{Hash, Hasher};
 use std::string::String;
 
-pub type BalancesMap = StorageMap<Identity, u64>;
-pub type OwnersMap = StorageMap<u64, Option<Identity>>;
+pub type BalancesMap = StorageMap<Address, u64>;
+pub type OwnersMap = StorageMap<u64, Option<Address>>;
 pub type GuildIdActionTokenIdMap = StorageMap<u64, StorageMap<GuildAction, u64>>;
-pub type TokenIdByAddressMap = StorageMap<Identity, GuildIdActionTokenIdMap>;
+pub type TokenIdByAddressMap = StorageMap<Address, GuildIdActionTokenIdMap>;
 pub type TokenIdByUserIdMap = StorageMap<u64, StorageKey<GuildIdActionTokenIdMap>>;
 pub type TotalMintedPerGuildMap = StorageMap<u64, u64>;
 
@@ -71,7 +71,12 @@ impl Hash for PinDataParams {
 }
 
 impl PinDataParams {
-    pub fn to_message(self, admin_treasury: Identity, admin_fee: u64, contract_id: Identity) -> b256 {
+    pub fn to_message(
+        self,
+        admin_treasury: Identity,
+        admin_fee: u64,
+        contract_id: ContractId,
+) -> b256 {
         let mut hasher = Hasher::new();
         self.hash(hasher);
         admin_treasury.hash(hasher);

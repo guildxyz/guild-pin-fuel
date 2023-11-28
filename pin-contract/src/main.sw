@@ -11,6 +11,7 @@ use ::interfaces::token::*;
 use ownership::Ownership;
 use src_5::State;
 
+use std::b512::B512;
 use std::constants::ZERO_B256;
 use std::hash::Hash;
 use std::vm::evm::evm_address::EvmAddress;
@@ -20,6 +21,7 @@ configurable {
     SYMBOL: str[5] = __to_str_array("GUILD"),
     OWNER: Identity = Identity::Address(Address::from(ZERO_B256)),
     SIGNER: b256 = ZERO_B256,
+    SIGNATURE_VALIDITY_PERIOD: u64 = 3600,
     TREASURY: Identity = Identity::ContractId(ContractId::from(ZERO_B256)),
     FEE: u64 = 0,
 }
@@ -30,7 +32,7 @@ storage {
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
     fee: u64 = FEE,
     balances: BalancesMap = StorageMap {},
-    owners: OwnersMap = StorageMap {},
+    pin_owners: OwnersMap = StorageMap {},
     token_id_by_address: TokenIdByAddressMap = StorageMap {},
     token_id_by_user_id: TokenIdByUserIdMap = StorageMap {},
     total_minted_per_guild: TotalMintedPerGuildMap = StorageMap {},
@@ -92,5 +94,55 @@ impl OwnerInfo for Contract {
     #[storage(read)]
     fn fee() -> u64 {
         _fee(storage.fee)
+    }
+}
+
+impl PinToken for Contract {
+    #[storage(read, write)]
+    fn claim(
+        params: PinDataParams,
+        admin_treasury: Identity,
+        admin_fee: u64,
+        signature: B512,
+    ) {
+        let token_keys = TokenKeys {
+            balances: storage.balances,
+            pin_owners: storage.pin_owners,
+            token_id_by_address: storage.token_id_by_address,
+            token_id_by_user_id: storage.token_id_by_user_id,
+            total_minted_per_guild: storage.total_minted_per_guild,
+            total_minted: storage.total_minted,
+            total_supply: storage.total_supply,
+        };
+
+        let init_keys = InitKeys {
+            owner: storage.owner,
+            signer: storage.signer,
+            treasury: storage.treasury,
+            fee: storage.fee,
+        };
+        _claim(
+            params,
+            admin_treasury,
+            admin_fee,
+            signature,
+            SIGNATURE_VALIDITY_PERIOD,
+            token_keys,
+            init_keys,
+        );
+    }
+
+    #[storage(read, write)]
+    fn burn(token_id: u64) {
+        let token_keys = TokenKeys {
+            balances: storage.balances,
+            pin_owners: storage.pin_owners,
+            token_id_by_address: storage.token_id_by_address,
+            token_id_by_user_id: storage.token_id_by_user_id,
+            total_minted_per_guild: storage.total_minted_per_guild,
+            total_minted: storage.total_minted,
+            total_supply: storage.total_supply,
+        };
+        _burn(token_id, token_keys)
     }
 }
