@@ -54,8 +54,6 @@ abi PinToken {
     #[storage(read, write)]
     fn claim(params: ClaimParameters, signature: B512);
     #[storage(read, write)]
-    fn update_claim(params: ClaimParameters, signature: B512);
-    #[storage(read, write)]
     fn burn(pin_id: u64);
 }
 
@@ -72,8 +70,6 @@ abi PinInfo {
     fn pin_id_by_address(user: Address, guild_id: u64, action: GuildAction) -> Option<u64>;
     #[storage(read)]
     fn pin_id_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> Option<u64>;
-    //#[storage(read)]
-    //fn token_uri(pin_id: u64) -> TokenUri;
 }
 
 #[storage(read, write)]
@@ -84,12 +80,10 @@ pub fn _claim(
     token_keys: TokenKeys,
     init_keys: InitKeys,
 ) {
+    // NOTE anyone call this function if they have the params with a valid signature
     // check if the contract is initialized
     _initialized(init_keys.owner);
     // perform checks
-    // TODO can anyone call this function if they have the params with a valid signature, or
-    // does msg_sender() has to be the same as `params.recipient`
-    // let caller = msg_sender().unwrap().as_address().unwrap();
     let mint_date = _check_signature(params, signature, signature_validity_period, init_keys);
     require(
         !(_pin_id_by_address(
@@ -218,15 +212,6 @@ pub fn _burn(pin_id: u64, token_keys: TokenKeys) {
         pin_id,
     });
 }
-
-#[storage(read, write)]
-fn _update_claim(
-    params: ClaimParameters,
-    signature: B512,
-    signature_validity_period: u64,
-    token_keys: TokenKeys,
-    init_keys: InitKeys,
-) {}
 
 #[storage(read)]
 fn _check_signature(

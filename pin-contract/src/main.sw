@@ -6,14 +6,17 @@ mod interfaces;
 use ::common::*;
 use ::interfaces::init::*;
 use ::interfaces::owner::*;
+use ::interfaces::src20::*;
 use ::interfaces::token::*;
 
 use ownership::Ownership;
-use src_5::State;
+use src_20::SRC20;
+use src_5::{SRC5, State};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
 use std::hash::Hash;
+use std::string::String;
 use std::vm::evm::evm_address::EvmAddress;
 
 configurable {
@@ -27,18 +30,32 @@ configurable {
 }
 
 storage {
+    /// The contract owner
     owner: Ownership = Ownership::uninitialized(),
+    /// Evm address of the guild-backend signer wallet
     signer: b256 = ZERO_B256,
+    /// Treasury address receiving minting fees
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
+    /// Fee collected upon claiming a pin
     fee: u64 = FEE,
+    /// Map: pin_id -> metadata
     metadata: StorageMap<u64, PinData> = StorageMap {},
+    /// Map: address -> pin_balance (increment upon claim, decrement upon burn)
     balances: BalancesMap = StorageMap {},
+    /// Map: pin_id -> maybe_owner (None if burned)
     pin_owners: OwnersMap = StorageMap {},
+    /// Map: (address + guild_id + guild_action) -> pin_id
     token_id_by_address: TokenIdByAddressMap = StorageMap {},
+    /// Map: (user_id + guild_id + guild_action) -> pin_id
     token_id_by_user_id: TokenIdByUserIdMap = StorageMap {},
+    /// Only incremented
     total_minted_per_guild: TotalMintedPerGuildMap = StorageMap {},
+    /// Only incremented
     total_minted: u64 = 0,
+    /// Incremented upon successful claim, decremented upon successful burn
     total_supply: u64 = 0,
+    /// Dummy key to make warnings disappear
+    warning: bool = false,
 }
 
 impl Initialize for Contract {
@@ -80,10 +97,6 @@ impl OnlyOwner for Contract {
 }
 
 impl OwnerInfo for Contract {
-    #[storage(read)]
-    fn owner() -> State {
-        _owner(storage.owner)
-    }
     #[storage(read)]
     fn signer() -> b256 {
         _signer(storage.signer)
@@ -127,33 +140,7 @@ impl PinToken for Contract {
             init_keys,
         );
     }
-    #[storage(read, write)]
-    fn update_claim(params: ClaimParameters, signature: B512) {
-        let token_keys = TokenKeys {
-            metadata: storage.metadata,
-            balances: storage.balances,
-            pin_owners: storage.pin_owners,
-            token_id_by_address: storage.token_id_by_address,
-            token_id_by_user_id: storage.token_id_by_user_id,
-            total_minted_per_guild: storage.total_minted_per_guild,
-            total_minted: storage.total_minted,
-            total_supply: storage.total_supply,
-        };
 
-        let init_keys = InitKeys {
-            owner: storage.owner,
-            signer: storage.signer,
-            treasury: storage.treasury,
-            fee: storage.fee,
-        };
-        _update_claim(
-            params,
-            signature,
-            SIGNATURE_VALIDITY_PERIOD,
-            token_keys,
-            init_keys,
-        )
-    }
     #[storage(read, write)]
     fn burn(pin_id: u64) {
         let token_keys = TokenKeys {
@@ -198,8 +185,42 @@ impl PinInfo for Contract {
     fn pin_id_by_user_id(user_id: u64, guild_id: u64, action: GuildAction) -> Option<u64> {
         _pin_id_by_user_id(user_id, guild_id, action, storage.token_id_by_user_id)
     }
-    //#[storage(read)]
-    //fn token_uri(pin_id: u64) -> TokenUri {
-    //    _token_uri(pin_id: u64)
-    //}
+}
+
+impl SRC5 for Contract {
+    #[storage(read)]
+    fn owner() -> State {
+        _owner(storage.owner)
+    }
+}
+
+impl SRC20 for Contract {
+    #[storage(read)]
+    fn total_assets() -> u64 {
+        let _ = storage.warning.read();
+        _total_assets()
+    }
+
+    #[storage(read)]
+    fn total_supply(asset: AssetId) -> Option<u64> {
+        _total_supply(asset, storage.total_supply)
+    }
+
+    #[storage(read)]
+    fn name(asset: AssetId) -> Option<String> {
+        let _ = storage.warning.read();
+        _name(asset, NAME)
+    }
+
+    #[storage(read)]
+    fn symbol(asset: AssetId) -> Option<String> {
+        let _ = storage.warning.read();
+        _symbol(asset, SYMBOL)
+    }
+
+    #[storage(read)]
+    fn decimals(asset: AssetId) -> Option<u8> {
+        let _ = storage.warning.read();
+        _decimals(asset)
+    }
 }

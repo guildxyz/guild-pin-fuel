@@ -18,8 +18,6 @@ abi OnlyOwner {
 
 abi OwnerInfo {
     #[storage(read)]
-    fn owner() -> State;
-    #[storage(read)]
     fn signer() -> b256;
     #[storage(read)]
     fn treasury() -> Identity;
