@@ -166,7 +166,7 @@ impl GuildPinContract {
             .with_account(caller.clone())?
             .methods()
             .claim(params, signature)
-            .append_variable_outputs(1)
+            .append_variable_outputs(2) // needed for sending tokens to optionally 2 treasuries
             .call_params(
                 CallParameters::default()
                     .with_asset_id(asset_id)

@@ -117,7 +117,7 @@ pub fn _claim(
     let asset_id = msg_asset_id();
     require(asset_id == BASE_ASSET_ID, TokenError::InvalidAssetId);
     require(
-        msg_amount() == params
+        msg_amount() >= params
             .admin_fee + fee,
         TokenError::InsufficientAmount,
     );
@@ -231,7 +231,7 @@ fn _check_signature(
     // check signature expiration
     require(
         params
-            .signed_at < timestamp - signature_validity_period - 37,
+            .signed_at > timestamp - signature_validity_period,
         TokenError::ExpiredSignature,
     );
 

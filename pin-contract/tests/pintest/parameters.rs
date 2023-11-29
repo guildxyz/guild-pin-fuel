@@ -4,7 +4,6 @@ use fuels::prelude::{
     launch_custom_provider_and_get_wallets, Provider, WalletUnlocked, WalletsConfig,
 };
 use fuels::types::{Bits256, EvmAddress, Identity, B512};
-use signrs::eth::hash_eth_message;
 use signrs::eth::EthSigner;
 
 pub struct ParametersBuilder {
@@ -52,12 +51,11 @@ impl ParametersBuilder {
             .await
             .unwrap();
 
-        let contract = wallets.pop().unwrap();
-        let provider = contract.provider().unwrap();
+        //let contract = wallets.pop().unwrap();
+        //let provider = contract.provider().unwrap();
 
         Parameters {
-            provider: provider.clone(),
-            contract,
+            contract: wallets.pop().unwrap(),
             owner: wallets.pop().unwrap(),
             treasury: wallets.pop().unwrap(),
             signer: EthSigner::new(&self.signer_seed),
@@ -71,7 +69,6 @@ impl ParametersBuilder {
 }
 
 pub struct Parameters {
-    pub provider: Provider,
     pub contract: WalletUnlocked,
     pub owner: WalletUnlocked,
     pub treasury: WalletUnlocked,
@@ -84,6 +81,23 @@ pub struct Parameters {
 }
 
 impl Parameters {
+    pub async fn timestamp(&self) -> u64 {
+        self.provider()
+            .latest_block_time()
+            .await
+            .unwrap()
+            .unwrap()
+            .timestamp() as u64
+    }
+
+    pub async fn tai64_timestamp(&self) -> u64 {
+        crate::utils::to_tai64_timestamp(self.timestamp().await)
+    }
+
+    pub fn provider(&self) -> &Provider {
+        self.contract.provider().unwrap()
+    }
+
     pub fn signer_b256(&self) -> Bits256 {
         let mut b256 = Bits256::zeroed();
         b256.0[12..].copy_from_slice(&self.signer.address());

@@ -1,6 +1,9 @@
 use crate::contract::{ClaimParameters, GuildAction};
-use fuels::types::{ContractId, Identity};
+use fuels::types::{Address, ContractId, Identity, SizedAsciiString};
 use sha3::digest::Digest;
+use std::time::{SystemTime, UNIX_EPOCH};
+
+pub const CID64: &str = "abcdefghijklmnopqrstuvxyzabcdefghijklmnopqrstuvxyzabcdefghijklmn";
 
 pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
     let mut output = [0u8; 32];
@@ -49,6 +52,86 @@ fn action_byte(action: &GuildAction) -> u8 {
         GuildAction::Joined => 0,
         GuildAction::Owner => 1,
         GuildAction::Admin => 2,
+    }
+}
+
+pub fn to_tai64_timestamp(unix_seconds: u64) -> u64 {
+    unix_seconds + (1u64 << 62) + 10u64
+}
+
+pub struct ClaimBuilder {
+    pub recipient: Address,
+    pub action: GuildAction,
+    pub user_id: u64,
+    pub guild_id: u64,
+    pub guild_name: SizedAsciiString<64>,
+    pub created_at: u64,
+    pub signed_at: u64,
+    pub cid: SizedAsciiString<64>,
+    pub admin_treasury: Identity,
+    pub admin_fee: u64,
+    pub contract_id: ContractId,
+}
+
+impl ClaimBuilder {
+    pub fn new(recipient: Address, contract_id: ContractId) -> Self {
+        Self {
+            recipient,
+            action: GuildAction::Joined,
+            user_id: 100,
+            guild_id: 1234,
+            guild_name: SizedAsciiString::new_with_right_whitespace_padding(
+                "MyAwesomeGuild".to_string(),
+            )
+            .unwrap(),
+            created_at: 100_000,
+            signed_at: to_tai64_timestamp(
+                SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_secs(),
+            ),
+            cid: SizedAsciiString::new_with_right_whitespace_padding(CID64.to_string()).unwrap(),
+            admin_treasury: Identity::ContractId(contract_id),
+            admin_fee: 0,
+            contract_id,
+        }
+    }
+
+    pub fn admin_treasury(mut self, treasury: Identity) -> Self {
+        self.admin_treasury = treasury;
+        self
+    }
+
+    pub fn admin_fee(mut self, fee: u64) -> Self {
+        self.admin_fee = fee;
+        self
+    }
+
+    pub fn user_id(mut self, user_id: u64) -> Self {
+        self.user_id = user_id;
+        self
+    }
+
+    pub fn signed_at(mut self, signed_at: u64) -> Self {
+        self.signed_at = signed_at;
+        self
+    }
+
+    pub fn build(self) -> ClaimParameters {
+        ClaimParameters {
+            recipient: self.recipient,
+            action: self.action,
+            user_id: self.user_id,
+            guild_id: self.guild_id,
+            guild_name: self.guild_name,
+            created_at: self.created_at,
+            signed_at: self.signed_at,
+            cid: self.cid,
+            admin_treasury: self.admin_treasury,
+            admin_fee: self.admin_fee,
+            contract_id: self.contract_id,
+        }
     }
 }
 
