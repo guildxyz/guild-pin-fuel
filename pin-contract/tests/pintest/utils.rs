@@ -20,11 +20,11 @@ fn hash_identity(identity: &Identity, bytes: &mut Vec<u8>) {
         Identity::Address(address) => {
             bytes.push(0);
             bytes.extend_from_slice(address.as_slice());
-        },
+        }
         Identity::ContractId(contract_id) => {
             bytes.push(1);
             bytes.extend_from_slice(contract_id.as_slice());
-        },
+        }
     }
 }
 

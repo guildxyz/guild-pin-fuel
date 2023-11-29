@@ -24,7 +24,6 @@ pub enum TokenError {
     PinIdDoesNotExist: (),
     NotPinOwner: (),
     CouldNotRemoveEntry: (),
-    Signature: (b256, b256),
 }
 
 pub struct PinMinted {
@@ -236,8 +235,6 @@ fn _check_signature(
     let signer = EvmAddress::from(init_keys.signer.read());
     let message = params.to_message();
     let recovered = ec_recover_evm_address(signature, message).unwrap();
-
-    require(false, TokenError::Signature((signer.value, recovered.value)));
 
     require(signer == recovered, TokenError::InvalidSignature);
     timestamp
