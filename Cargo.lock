@@ -2034,6 +2034,8 @@ version = "0.0.0"
 dependencies = [
  "fuels",
  "hex",
+ "serde",
+ "serde_json",
  "sha3",
  "signrs",
  "tokio",

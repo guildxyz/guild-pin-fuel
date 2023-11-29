@@ -227,9 +227,16 @@ impl SRC20 for Contract {
     }
 }
 
-impl SRC7 for Contract {
+impl PinMetadata for Contract {
     #[storage(read)]
-    fn metadata(asset: AssetId, key: String) -> Option<Metadata> {
-        _metadata(asset, key, storage.metadata)
+    fn metadata(pin_id: u64) -> String {
+        _metadata(pin_id, storage.metadata)
     }
 }
+
+//impl SRC7 for Contract {
+//    #[storage(read)]
+//    fn metadata(asset: AssetId, key: String) -> Option<Metadata> {
+//        Some(_metadata(asset, key, storage.metadata))
+//    }
+//}

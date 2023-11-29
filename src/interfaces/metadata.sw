@@ -11,24 +11,18 @@ use std::string::String;
 
 pub enum MetadataError {
     InvalidKeyLength: (),
+    MIAFASZ: String,
+}
+
+abi PinMetadata {
+    #[storage(read)]
+    fn metadata(key: u64) -> String;
 }
 
 #[storage(read)]
-pub fn _metadata(
-    asset: AssetId,
-    metadata_key: String,
-    key: StorageKey<StorageMap<u64, PinData>>,
-) -> Option<Metadata> {
-    require(
-        asset == AssetId::default(contract_id()),
-        TokenError::InvalidAssetId,
-    );
-    // NOTE compiler cries that it cannot find "from_be_bytes" for "u64" ffs...soooo, I'll copy the
-    // code from sway-lib-std/src/bytes_conversions/u64 where it _clearly_ exists let pin_id =
-    // let pin_id = u64::from_be_bytes(metadata_key.as_bytes());
-    let pin_id = parse(metadata_key);
+pub fn _metadata(pin_id: u64, key: StorageKey<StorageMap<u64, PinData>>) -> String {
     if let Some(pin_data) = key.get(pin_id).try_read() {
-        Some(Metadata::String(pin_data.encode()))
+        pin_data.encode()
     } else {
         require(false, TokenError::PinIdDoesNotExist);
         revert(0);

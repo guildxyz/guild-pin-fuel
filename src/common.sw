@@ -12,6 +12,9 @@ pub type TokenIdByAddressMap = StorageMap<Address, GuildIdActionTokenIdMap>;
 pub type TokenIdByUserIdMap = StorageMap<u64, StorageKey<GuildIdActionTokenIdMap>>;
 pub type TotalMintedPerGuildMap = StorageMap<u64, u64>;
 
+const Q: u8 = 34; // character \"
+const LB: u8 = 123; // character {
+const RB: u8 = 125; // character {
 pub enum GuildAction {
     Joined: (),
     Owner: (),
@@ -24,6 +27,14 @@ impl GuildAction {
             GuildAction::Joined => 0,
             GuildAction::Owner => 1,
             GuildAction::Admin => 2,
+        }
+    }
+
+    pub fn to_str(self) -> str {
+        match self {
+            GuildAction::Joined => "Joined",
+            GuildAction::Owner => "Owner of",
+            GuildAction::Admin => "Admin of",
         }
     }
 }
@@ -49,7 +60,13 @@ pub struct PinData {
 
 impl PinData {
     pub fn encode(self) -> String {
-        String::new()
+        let mut hasher = Hasher::new();
+        LB.hash(hasher);
+        Q.hash(hasher);
+        "name".hash(hasher);
+        Q.hash(hasher);
+        ": ".hash(hasher);
+        String::from(hasher.bytes)
     }
 }
 

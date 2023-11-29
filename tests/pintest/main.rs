@@ -5,6 +5,7 @@ mod claim;
 mod contract;
 mod fee;
 mod init;
+mod metadata;
 mod owner;
 mod parameters;
 mod signer;
