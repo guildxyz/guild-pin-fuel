@@ -47,6 +47,12 @@ pub struct PinData {
     cid: str[64],
 }
 
+impl PinData {
+    pub fn encode(self) -> String {
+        String::new()
+    }
+}
+
 pub struct ClaimParameters {
     recipient: Address,
     action: GuildAction,
@@ -94,18 +100,4 @@ impl ClaimParameters {
         hashed_msg.hash(hasher);
         hasher.keccak256()
     }
-}
-
-pub struct TokenUri {
-    name: GuildAction,
-    description: str[128],
-    image: str[128],
-    attributes: [Attribute; 4],
-}
-
-pub enum Attribute {
-    UserId: u64,
-    Rank: u64,
-    ActionDate: u64,
-    MintDate: u64,
 }

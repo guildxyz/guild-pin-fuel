@@ -5,6 +5,7 @@ mod interfaces;
 
 use ::common::*;
 use ::interfaces::init::*;
+use ::interfaces::metadata::*;
 use ::interfaces::owner::*;
 use ::interfaces::src20::*;
 use ::interfaces::token::*;
@@ -12,6 +13,7 @@ use ::interfaces::token::*;
 use ownership::Ownership;
 use src_20::SRC20;
 use src_5::{SRC5, State};
+use src_7::{Metadata, SRC7};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
@@ -222,5 +224,12 @@ impl SRC20 for Contract {
     fn decimals(asset: AssetId) -> Option<u8> {
         let _ = storage.warning.read();
         _decimals(asset)
+    }
+}
+
+impl SRC7 for Contract {
+    #[storage(read)]
+    fn metadata(asset: AssetId, key: String) -> Option<Metadata> {
+        _metadata(asset, key, storage.metadata)
     }
 }
