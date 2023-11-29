@@ -143,3 +143,27 @@ impl PinToken for Contract {
         _burn(pin_id, token_keys)
     }
 }
+
+impl PinInfo {
+    #[storage(read)]
+    fn balance_of(id: Address) -> u64 {
+        storage.balances.get(id).read()
+    }
+    #[storage(read)]
+    fn pin_owner(pin_id: u64) -> Option<Address> {
+        storage.owners.get(pin_id).read()
+    }
+    #[storage(read)]
+    fn total_minted() -> u64 {
+        storage.total_minted.read()
+    }
+    #[storage(read)]
+    fn has_claimed_by_address(user: Address, guild_id: u64, action: GuildAction) -> bool {
+        _has_claimed_by_address(user, guild_id, action, storage.token_id_by_address)
+    }
+
+    #[storage(read)]
+    fn has_claimed_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> bool {
+        _has_claimed_by_address(user, guild_id, action, storage.token_id_by_address)
+    }
+}

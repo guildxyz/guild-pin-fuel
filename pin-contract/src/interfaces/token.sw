@@ -86,7 +86,7 @@ pub fn _claim(
     // let caller = msg_sender().unwrap().as_address().unwrap();
     let mint_date = _check_signature(params, signature, signature_validity_period, init_keys);
     require(
-        !(_has_claimed_by_address(
+        !(_pin_id_by_address(
             params
                 .recipient,
             params
@@ -95,7 +95,7 @@ pub fn _claim(
                 .action,
             token_keys
                 .token_id_by_address,
-        ) || _has_claimed_by_user_id(
+        ).is_some() || _pin_id_by_user_id(
             params
                 .user_id,
             params
@@ -104,7 +104,7 @@ pub fn _claim(
                 .action,
             token_keys
                 .token_id_by_user_id,
-        )),
+        )).is_some(),
         TokenError::AlreadyClaimed,
     );
 
@@ -243,25 +243,25 @@ fn _check_signature(
 // NOTE unfortunately I need to explicitly write out the map type, otherwise the compiler cries
 // that there's no method `get` found for `StorageKey<TokenIdByAddressMap>`
 #[storage(read)]
-pub fn _has_claimed_by_address(
+pub fn _pin_id_by_address(
     user: Address,
     guild_id: u64,
     action: GuildAction,
     key: StorageKey<StorageMap<Address, StorageMap<u64, StorageMap<GuildAction, u64>>>>,
-) -> bool {
-    key.get(user).get(guild_id).get(action).try_read().is_some()
+) -> Option<u64> {
+    key.get(user).get(guild_id).get(action).try_read()
 }
 
 #[storage(read)]
-pub fn _has_claimed_by_user_id(
+pub fn _pin_id_by_user_id(
     user: u64,
     guild_id: u64,
     action: GuildAction,
     key: StorageKey<StorageMap<u64, StorageKey<StorageMap<u64, StorageMap<GuildAction, u64>>>>>,
-) -> bool {
+) -> Option<u64> {
     if let Some(map_key) = key.get(user).try_read() {
-        map_key.get(guild_id).get(action).try_read().is_some()
+        map_key.get(guild_id).get(action).try_read()
     } else {
-        false
+        None
     }
 }
