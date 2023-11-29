@@ -1,11 +1,77 @@
 use crate::contract::ClaimParameters;
 use crate::utils::hash_params;
-use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
+use fuels::prelude::{
+    launch_custom_provider_and_get_wallets, Provider, WalletUnlocked, WalletsConfig,
+};
 use fuels::types::{Bits256, EvmAddress, Identity, B512};
 use signrs::eth::hash_eth_message;
 use signrs::eth::EthSigner;
 
+pub struct ParametersBuilder {
+    pub fee: u64,
+    pub genesis_balance: u64,
+    pub signer_seed: [u8; 32],
+    pub signer_alt_seed: [u8; 32],
+}
+
+impl Default for ParametersBuilder {
+    fn default() -> Self {
+        Self {
+            fee: 10,
+            genesis_balance: 1_000_000_000,
+            signer_seed: [11u8; 32],
+            signer_alt_seed: [22u8; 32],
+        }
+    }
+}
+
+impl ParametersBuilder {
+    pub fn new() -> Self {
+        Self::default()
+    }
+
+    pub fn with_fee(mut self, fee: u64) -> Self {
+        self.fee = fee;
+        self
+    }
+
+    pub fn with_genesis_balance(mut self, genesis_balance: u64) -> Self {
+        self.genesis_balance = genesis_balance;
+        self
+    }
+
+    pub async fn build(self) -> Parameters {
+        let number_of_wallets = 6;
+        let coins_per_wallet = 1;
+        let wallet_config = WalletsConfig::new(
+            Some(number_of_wallets),
+            Some(coins_per_wallet),
+            Some(self.genesis_balance),
+        );
+        let mut wallets = launch_custom_provider_and_get_wallets(wallet_config, None, None)
+            .await
+            .unwrap();
+
+        let contract = wallets.pop().unwrap();
+        let provider = contract.provider().unwrap();
+
+        Parameters {
+            provider: provider.clone(),
+            contract,
+            owner: wallets.pop().unwrap(),
+            treasury: wallets.pop().unwrap(),
+            signer: EthSigner::new(&self.signer_seed),
+            signer_alt: EthSigner::new(&self.signer_alt_seed),
+            fee: self.fee,
+            alice: wallets.pop().unwrap(),
+            bob: wallets.pop().unwrap(),
+            charlie: wallets.pop().unwrap(),
+        }
+    }
+}
+
 pub struct Parameters {
+    pub provider: Provider,
     pub contract: WalletUnlocked,
     pub owner: WalletUnlocked,
     pub treasury: WalletUnlocked,
@@ -18,32 +84,6 @@ pub struct Parameters {
 }
 
 impl Parameters {
-    pub async fn new(fee: u64) -> Self {
-        let number_of_wallets = 6;
-        let coins_per_wallet = 1;
-        let amount_per_coin = 1_000_000_000;
-        let wallet_config = WalletsConfig::new(
-            Some(number_of_wallets),
-            Some(coins_per_wallet),
-            Some(amount_per_coin),
-        );
-        let mut wallets = launch_custom_provider_and_get_wallets(wallet_config, None, None)
-            .await
-            .unwrap();
-
-        Self {
-            contract: wallets.pop().unwrap(),
-            owner: wallets.pop().unwrap(),
-            treasury: wallets.pop().unwrap(),
-            signer: EthSigner::new(&[3u8; 32]),
-            signer_alt: EthSigner::new(&[19u8; 32]),
-            fee,
-            alice: wallets.pop().unwrap(),
-            bob: wallets.pop().unwrap(),
-            charlie: wallets.pop().unwrap(),
-        }
-    }
-
     pub fn signer_b256(&self) -> Bits256 {
         let mut b256 = Bits256::zeroed();
         b256.0[12..].copy_from_slice(&self.signer.address());

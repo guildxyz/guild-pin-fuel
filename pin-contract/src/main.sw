@@ -144,26 +144,32 @@ impl PinToken for Contract {
     }
 }
 
-impl PinInfo {
+impl PinInfo for Contract {
     #[storage(read)]
     fn balance_of(id: Address) -> u64 {
-        storage.balances.get(id).read()
+        _balance_of(id, storage.balances)
     }
     #[storage(read)]
     fn pin_owner(pin_id: u64) -> Option<Address> {
-        storage.owners.get(pin_id).read()
+        _pin_owner(pin_id, storage.pin_owners)
     }
     #[storage(read)]
     fn total_minted() -> u64 {
         storage.total_minted.read()
     }
+
     #[storage(read)]
-    fn has_claimed_by_address(user: Address, guild_id: u64, action: GuildAction) -> bool {
-        _has_claimed_by_address(user, guild_id, action, storage.token_id_by_address)
+    fn total_minted_per_guild(guild_id: u64) -> u64 {
+        _total_minted_per_guild(guild_id, storage.total_minted_per_guild)
     }
 
     #[storage(read)]
-    fn has_claimed_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> bool {
-        _has_claimed_by_address(user, guild_id, action, storage.token_id_by_address)
+    fn pin_id_by_address(user: Address, guild_id: u64, action: GuildAction) -> Option<u64> {
+        _pin_id_by_address(user, guild_id, action, storage.token_id_by_address)
+    }
+
+    #[storage(read)]
+    fn pin_id_by_user_id(user_id: u64, guild_id: u64, action: GuildAction) -> Option<u64> {
+        _pin_id_by_user_id(user_id, guild_id, action, storage.token_id_by_user_id)
     }
 }

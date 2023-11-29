@@ -1,11 +1,10 @@
 use crate::contract::{ContractInitialized, GuildPinContract};
-use crate::parameters::Parameters;
+use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
 
 #[tokio::test]
 async fn init_by_owner_success() {
-    let fee = 10;
-    let parameters = Parameters::new(fee).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::new(&parameters).await;
 
     let response = contract.initialize(&parameters.owner).await.unwrap();
@@ -15,15 +14,14 @@ async fn init_by_owner_success() {
             owner: parameters.owner_id(),
             signer: parameters.signer_evm(),
             treasury: parameters.treasury_id(),
-            fee,
+            fee: parameters.fee,
         },
     );
 }
 
 #[tokio::test]
 async fn init_by_random_success() {
-    let fee = 10;
-    let parameters = Parameters::new(fee).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::new(&parameters).await;
 
     let response = contract.initialize(&parameters.alice).await.unwrap();
@@ -36,7 +34,7 @@ async fn init_by_random_success() {
             owner: parameters.owner_id(),
             signer: parameters.signer_evm(),
             treasury: parameters.treasury_id(),
-            fee,
+            fee: parameters.fee,
         }]
     );
 

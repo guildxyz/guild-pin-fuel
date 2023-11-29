@@ -1,10 +1,10 @@
 use crate::contract::{GuildPinContract, SignerChanged};
-use crate::parameters::Parameters;
+use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
 
 #[tokio::test]
 async fn set_signer_success() {
-    let parameters = Parameters::new(10).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let owner = contract.owner().await.unwrap();
@@ -32,7 +32,7 @@ async fn set_signer_success() {
 
 #[tokio::test]
 async fn set_signer_fails() {
-    let parameters = Parameters::new(10).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract

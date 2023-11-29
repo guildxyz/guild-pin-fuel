@@ -11,7 +11,7 @@ pub fn keccak256<T: AsRef<[u8]>>(input: T) -> [u8; 32] {
 }
 
 pub fn hash_params(params: &ClaimParameters) -> [u8; 32] {
-    keccak256(&params_to_bytes(params))
+    keccak256(params_to_bytes(params))
 }
 
 // NOTE mimicking sway-lib-std/src/identity.sw hash impl

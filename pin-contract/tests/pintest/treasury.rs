@@ -1,10 +1,10 @@
 use crate::contract::{GuildPinContract, TreasuryChanged};
-use crate::parameters::Parameters;
+use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
 
 #[tokio::test]
 async fn set_treasury_success() {
-    let parameters = Parameters::new(10).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let treasury = contract.treasury().await.unwrap();
@@ -28,7 +28,7 @@ async fn set_treasury_success() {
 
 #[tokio::test]
 async fn set_treasury_fails() {
-    let parameters = Parameters::new(10).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract

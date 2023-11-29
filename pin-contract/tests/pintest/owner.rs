@@ -1,11 +1,10 @@
 use crate::contract::{GuildPinContract, OwnerChanged};
-use crate::parameters::Parameters;
+use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
 
 #[tokio::test]
 async fn set_owner_success() {
-    let fee = 10;
-    let parameters = Parameters::new(fee).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::new(&parameters).await;
 
     let error = contract.owner().await.unwrap_err();
@@ -32,7 +31,7 @@ async fn set_owner_success() {
 
 #[tokio::test]
 async fn set_owner_fails() {
-    let parameters = Parameters::new(10).await;
+    let parameters = ParametersBuilder::new().build().await;
     let contract = GuildPinContract::new(&parameters).await;
 
     // try to set owner before initialization

@@ -43,17 +43,6 @@ impl GuildPinContract {
             .await
             .unwrap();
 
-        //parameters
-        //    .owner
-        //    .force_transfer_to_contract(
-        //        &contract_id,
-        //        500_000,
-        //        AssetId::BASE,
-        //        TxParameters::default(),
-        //    )
-        //    .await
-        //    .unwrap();
-
         Self(GuildPin::new(contract_id, parameters.contract.clone()))
     }
 
@@ -63,8 +52,16 @@ impl GuildPinContract {
         contract
     }
 
+    pub fn bech_contract_id(&self) -> &Bech32ContractId {
+        self.0.contract_id()
+    }
+
     pub fn contract_id(&self) -> ContractId {
-        self.0.contract_id().into()
+        self.bech_contract_id().into()
+    }
+
+    pub fn asset_id(&self) -> AssetId {
+        self.bech_contract_id().asset_id(&Bits256::zeroed())
     }
 
     pub async fn initialize(&self, caller: &WalletUnlocked) -> Result<FuelCallResponse<()>> {
@@ -177,5 +174,69 @@ impl GuildPinContract {
             )?
             .call()
             .await
+    }
+
+    pub async fn balance_of(&self, id: Address) -> Result<u64> {
+        self.0
+            .methods()
+            .balance_of(id)
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn pin_owner(&self, pin_id: u64) -> Result<Option<Address>> {
+        self.0
+            .methods()
+            .pin_owner(pin_id)
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn total_minted(&self) -> Result<u64> {
+        self.0
+            .methods()
+            .total_minted()
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn total_minted_per_guild(&self, guild_id: u64) -> Result<u64> {
+        self.0
+            .methods()
+            .total_minted_per_guild(guild_id)
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn pin_id_by_address(
+        &self,
+        address: Address,
+        guild_id: u64,
+        action: GuildAction,
+    ) -> Result<Option<u64>> {
+        self.0
+            .methods()
+            .pin_id_by_address(address, guild_id, action)
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn pin_id_by_user_id(
+        &self,
+        user_id: u64,
+        guild_id: u64,
+        action: GuildAction,
+    ) -> Result<Option<u64>> {
+        self.0
+            .methods()
+            .pin_id_by_user_id(user_id, guild_id, action)
+            .call()
+            .await
+            .map(|r| r.value)
     }
 }

@@ -65,9 +65,11 @@ abi PinInfo {
     #[storage(read)]
     fn total_minted() -> u64;
     #[storage(read)]
-    fn has_claimed_by_address(user: Address, guild_id: u64, action: GuildAction) -> bool;
+    fn total_minted_per_guild(guild_id: u64) -> u64;
     #[storage(read)]
-    fn has_claimed_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> bool;
+    fn pin_id_by_address(user: Address, guild_id: u64, action: GuildAction) -> Option<u64>;
+    #[storage(read)]
+    fn pin_id_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> Option<u64>;
 }
 
 #[storage(read, write)]
@@ -95,7 +97,8 @@ pub fn _claim(
                 .action,
             token_keys
                 .token_id_by_address,
-        ).is_some() || _pin_id_by_user_id(
+        )
+            .is_some() || _pin_id_by_user_id(
             params
                 .user_id,
             params
@@ -104,7 +107,8 @@ pub fn _claim(
                 .action,
             token_keys
                 .token_id_by_user_id,
-        )).is_some(),
+        )
+            .is_some()),
         TokenError::AlreadyClaimed,
     );
 
@@ -126,7 +130,7 @@ pub fn _claim(
 
     // update storage
     let pin_id = token_keys.total_minted.read();
-    let balance = token_keys.balances.get(params.recipient).try_read().unwrap_or(0);
+    let balance = _balance_of(params.recipient, token_keys.balances);
     let total_minted_per_guild = token_keys.total_minted_per_guild.get(params.guild_id).try_read().unwrap_or(0);
     token_keys.balances.insert(params.recipient, balance + 1);
     token_keys.pin_owners.insert(pin_id, Some(params.recipient));
@@ -264,4 +268,22 @@ pub fn _pin_id_by_user_id(
     } else {
         None
     }
+}
+
+#[storage(read)]
+pub fn _balance_of(id: Address, key: StorageKey<StorageMap<Address, u64>>) -> u64 {
+    key.get(id).try_read().unwrap_or(0)
+}
+
+#[storage(read)]
+pub fn _pin_owner(
+    pin_id: u64,
+    key: StorageKey<StorageMap<u64, Option<Address>>>,
+) -> Option<Address> {
+    key.get(pin_id).try_read().unwrap_or(None)
+}
+
+#[storage(read)]
+pub fn _total_minted_per_guild(guild_id: u64, key: StorageKey<StorageMap<u64, u64>>) -> u64 {
+    key.get(guild_id).try_read().unwrap_or(0)
 }
