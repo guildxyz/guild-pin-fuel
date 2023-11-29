@@ -54,6 +54,8 @@ abi PinToken {
     #[storage(read, write)]
     fn claim(params: ClaimParameters, signature: B512);
     #[storage(read, write)]
+    fn update_claim(params: ClaimParameters, signature: B512);
+    #[storage(read, write)]
     fn burn(pin_id: u64);
 }
 
@@ -70,6 +72,8 @@ abi PinInfo {
     fn pin_id_by_address(user: Address, guild_id: u64, action: GuildAction) -> Option<u64>;
     #[storage(read)]
     fn pin_id_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> Option<u64>;
+    //#[storage(read)]
+    //fn token_uri(pin_id: u64) -> TokenUri;
 }
 
 #[storage(read, write)]
@@ -214,6 +218,15 @@ pub fn _burn(pin_id: u64, token_keys: TokenKeys) {
         pin_id,
     });
 }
+
+#[storage(read, write)]
+fn _update_claim(
+    params: ClaimParameters,
+    signature: B512,
+    signature_validity_period: u64,
+    token_keys: TokenKeys,
+    init_keys: InitKeys,
+) {}
 
 #[storage(read)]
 fn _check_signature(

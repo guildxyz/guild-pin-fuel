@@ -127,7 +127,33 @@ impl PinToken for Contract {
             init_keys,
         );
     }
+    #[storage(read, write)]
+    fn update_claim(params: ClaimParameters, signature: B512) {
+        let token_keys = TokenKeys {
+            metadata: storage.metadata,
+            balances: storage.balances,
+            pin_owners: storage.pin_owners,
+            token_id_by_address: storage.token_id_by_address,
+            token_id_by_user_id: storage.token_id_by_user_id,
+            total_minted_per_guild: storage.total_minted_per_guild,
+            total_minted: storage.total_minted,
+            total_supply: storage.total_supply,
+        };
 
+        let init_keys = InitKeys {
+            owner: storage.owner,
+            signer: storage.signer,
+            treasury: storage.treasury,
+            fee: storage.fee,
+        };
+        _update_claim(
+            params,
+            signature,
+            SIGNATURE_VALIDITY_PERIOD,
+            token_keys,
+            init_keys,
+        )
+    }
     #[storage(read, write)]
     fn burn(pin_id: u64) {
         let token_keys = TokenKeys {
@@ -172,4 +198,8 @@ impl PinInfo for Contract {
     fn pin_id_by_user_id(user_id: u64, guild_id: u64, action: GuildAction) -> Option<u64> {
         _pin_id_by_user_id(user_id, guild_id, action, storage.token_id_by_user_id)
     }
+    //#[storage(read)]
+    //fn token_uri(pin_id: u64) -> TokenUri {
+    //    _token_uri(pin_id: u64)
+    //}
 }
