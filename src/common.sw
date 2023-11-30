@@ -1,6 +1,7 @@
 library;
 
 pub mod action;
+pub mod base64;
 pub mod claim;
 pub mod pin;
 
