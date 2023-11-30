@@ -59,6 +59,10 @@ pub fn to_tai64_timestamp(unix_seconds: u64) -> u64 {
     unix_seconds + (1u64 << 62) + 10u64
 }
 
+pub fn from_tai64_timestamp(tai_seconds: u64) -> u64 {
+    tai_seconds - (1u64 << 62) - 10u64
+}
+
 pub struct ClaimBuilder {
     pub recipient: Address,
     pub action: GuildAction,
@@ -152,5 +156,12 @@ mod test {
             hex::encode(output),
             "6c31fc15422ebad28aaf9089c306702f67540b53c7eea8b7d2941044b027100f"
         );
+    }
+
+    #[test]
+    fn tai64() {
+        let unix = 1234567890;
+        let tai = to_tai64_timestamp(unix);
+        assert_eq!(from_tai64_timestamp(tai), unix);
     }
 }

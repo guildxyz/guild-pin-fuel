@@ -290,7 +290,7 @@ async fn claim_with_expired_signature_fails() {
 
     let alice: Address = parameters.alice.address().into();
     let clp = ClaimBuilder::new(alice, contract.contract_id())
-        .signed_at(parameters.tai64_timestamp().await - 4000)
+        .signed_at(parameters.timestamp().await - 4000)
         .build();
     let signature = parameters.sign_claim(&clp);
     let error = contract

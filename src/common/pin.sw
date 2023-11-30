@@ -98,13 +98,15 @@ impl PinData {
         // mint_date
         LCB.hash(hasher);
         type_json("mintDate", hasher);
-        value_json(u64_to_string(self.mint_date), true, hasher);
+        value_json(u64_to_string(self.mint_date), false, hasher); //encode as string
+        date_json(hasher);
         RCB.hash(hasher);
         COMMA.hash(hasher);
         // action_date
         LCB.hash(hasher);
         type_json("actionDate", hasher);
-        value_json(u64_to_string(self.created_at), true, hasher);
+        value_json(u64_to_string(self.created_at), false, hasher); // encode as string
+        date_json(hasher);
         RCB.hash(hasher);
 
         RSB.hash(hasher);
@@ -140,6 +142,17 @@ where
         value.hash(hasher);
         Q.hash(hasher);
     }
+}
+
+fn date_json(ref mut hasher: Hasher) {
+    COMMA.hash(hasher);
+    Q.hash(hasher);
+    "display_type".hash(hasher); // str cannot be const
+    Q.hash(hasher);
+    COLON.hash(hasher);
+    Q.hash(hasher);
+    "date".hash(hasher);
+    Q.hash(hasher);
 }
 
 fn u64_to_string(num: u64) -> String {

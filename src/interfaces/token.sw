@@ -227,7 +227,8 @@ fn _check_signature(
             .contract_id == contract_id(),
         TokenError::InvalidContractId,
     );
-    let timestamp = now();
+    // convert from tai64 to unix timestamp
+    let timestamp = now() - (1 << 62) - 10;
     // check signature expiration
     require(
         params

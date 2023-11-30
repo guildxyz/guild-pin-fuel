@@ -51,9 +51,6 @@ impl ParametersBuilder {
             .await
             .unwrap();
 
-        //let contract = wallets.pop().unwrap();
-        //let provider = contract.provider().unwrap();
-
         Parameters {
             contract: wallets.pop().unwrap(),
             owner: wallets.pop().unwrap(),

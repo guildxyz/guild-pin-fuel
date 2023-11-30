@@ -1,16 +1,16 @@
 #![warn(clippy::all)]
 #![warn(clippy::dbg_macro)]
 
-mod claim;
-mod contract;
-mod fee;
-mod init;
-mod metadata;
-mod owner;
-mod parameters;
-mod signer;
-mod treasury;
-mod utils;
+pub mod claim;
+pub mod contract;
+pub mod fee;
+pub mod init;
+pub mod metadata;
+pub mod owner;
+pub mod parameters;
+pub mod signer;
+pub mod treasury;
+pub mod utils;
 
 use fuels::core::traits::{Parameterize, Tokenizable};
 use fuels::programs::call_response::FuelCallResponse;
