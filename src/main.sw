@@ -3,6 +3,9 @@ contract;
 mod common;
 mod interfaces;
 
+use ::common::action::GuildAction;
+use ::common::claim::ClaimParameters;
+use ::common::pin::PinData;
 use ::common::*;
 use ::interfaces::init::*;
 use ::interfaces::metadata::*;

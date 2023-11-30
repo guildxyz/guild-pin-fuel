@@ -1,6 +1,6 @@
 library;
 
-use ::common::PinData;
+use ::common::pin::PinData;
 use ::interfaces::token::TokenError;
 
 use std::call_frames::contract_id;

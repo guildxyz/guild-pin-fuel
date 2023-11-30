@@ -1,6 +1,8 @@
 library;
 
-use ::common::*;
+use ::common::action::GuildAction;
+use ::common::claim::ClaimParameters;
+use ::common::pin::PinData;
 use ::interfaces::init::{_initialized, InitKeys};
 
 use std::b512::B512;
