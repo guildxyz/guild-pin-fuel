@@ -1,6 +1,8 @@
 library;
 
+use std::assert::assert;
 use std::bytes::Bytes;
+use std::bytes_conversions::u64::*;
 use std::constants::ZERO_B256;
 use std::hash::{Hash, Hasher};
 use std::string::String;
@@ -13,8 +15,14 @@ pub type TokenIdByUserIdMap = StorageMap<u64, StorageKey<GuildIdActionTokenIdMap
 pub type TotalMintedPerGuildMap = StorageMap<u64, u64>;
 
 const Q: u8 = 34; // character \"
-const LB: u8 = 123; // character {
-const RB: u8 = 125; // character {
+const LCB: u8 = 123; // character {
+const RCB: u8 = 125; // character }
+const LSB: u8 = 91; // character [
+const RSB: u8 = 93; // character ]
+const X19: u8 = 25; // character \x19
+const NEWLINE: u8 = 10; // character \n
+const COLON: u8 = 58; // character :
+const COMMA: u8 = 44; // character ,
 pub enum GuildAction {
     Joined: (),
     Owner: (),
@@ -35,6 +43,14 @@ impl GuildAction {
             GuildAction::Joined => "Joined",
             GuildAction::Owner => "Owner of",
             GuildAction::Admin => "Admin of",
+        }
+    }
+
+    pub fn to_description(self) -> str {
+        match self {
+            GuildAction::Joined => " joined ",
+            GuildAction::Owner => "'re the owner of ",
+            GuildAction::Admin => "'re the admin of ",
         }
     }
 }
@@ -59,14 +75,139 @@ pub struct PinData {
 }
 
 impl PinData {
-    pub fn encode(self) -> String {
+    // I know this is horrible but do you have a better solution?
+    // I need to format this as proper json string.
+    pub fn encode(self, pin_id: u64) -> String {
         let mut hasher = Hasher::new();
-        LB.hash(hasher);
+        // name
+        LCB.hash(hasher);
         Q.hash(hasher);
         "name".hash(hasher);
         Q.hash(hasher);
-        ": ".hash(hasher);
+        COLON.hash(hasher);
+        Q.hash(hasher);
+        self.action.to_str().hash(hasher);
+        Q.hash(hasher);
+        COMMA.hash(hasher);
+        // description
+        Q.hash(hasher);
+        "description".hash(hasher);
+        Q.hash(hasher);
+        COLON.hash(hasher);
+        Q.hash(hasher);
+        "This is an onchain proof that you".hash(hasher);
+        self.action.to_description().hash(hasher);
+        from_str_array(self.guild_name).hash(hasher);
+        " on Guild.xyz".hash(hasher);
+        Q.hash(hasher);
+        COMMA.hash(hasher);
+        // image
+        Q.hash(hasher);
+        "image".hash(hasher);
+        Q.hash(hasher);
+        COLON.hash(hasher);
+        Q.hash(hasher);
+        "ipfs://".hash(hasher);
+        from_str_array(self.cid).hash(hasher);
+        Q.hash(hasher);
+        COMMA.hash(hasher);
+        // attributes
+        Q.hash(hasher);
+        "attributes".hash(hasher);
+        Q.hash(hasher);
+        COLON.hash(hasher);
+        LSB.hash(hasher);
+        // type
+        LCB.hash(hasher);
+        type_json("type", hasher);
+        value_json(self.action.to_str(), false, hasher);
+        RCB.hash(hasher);
+        COMMA.hash(hasher);
+        // guild_id
+        LCB.hash(hasher);
+        type_json("guildId", hasher);
+        value_json(u64_to_string(self.guild_id), true, hasher);
+        RCB.hash(hasher);
+        COMMA.hash(hasher);
+        // user_id
+        LCB.hash(hasher);
+        type_json("userId", hasher);
+        value_json(u64_to_string(self.user_id), true, hasher);
+        RCB.hash(hasher);
+        COMMA.hash(hasher);
+        // rank
+        LCB.hash(hasher);
+        type_json("rank", hasher);
+        value_json(u64_to_string(pin_id), true, hasher);
+        RCB.hash(hasher);
+        COMMA.hash(hasher);
+        // mint_date
+        LCB.hash(hasher);
+        type_json("mintDate", hasher);
+        value_json(u64_to_string(self.mint_date), true, hasher);
+        RCB.hash(hasher);
+        COMMA.hash(hasher);
+        // action_date
+        LCB.hash(hasher);
+        type_json("actionDate", hasher);
+        value_json(u64_to_string(self.created_at), true, hasher);
+        RCB.hash(hasher);
+
+        RSB.hash(hasher);
+        RCB.hash(hasher);
+
         String::from(hasher.bytes)
+    }
+}
+
+fn type_json(ty: str, ref mut hasher: Hasher) {
+    Q.hash(hasher);
+    "trait_type".hash(hasher); // str cannot be const
+    Q.hash(hasher);
+    COLON.hash(hasher);
+    Q.hash(hasher);
+    ty.hash(hasher);
+    Q.hash(hasher);
+    COMMA.hash(hasher);
+}
+fn value_json<T>(value: T, numeric: bool, ref mut hasher: Hasher)
+where
+    T: Hash,
+{
+    Q.hash(hasher);
+    "value".hash(hasher);
+    Q.hash(hasher);
+    COLON.hash(hasher);
+    if numeric {
+        value.hash(hasher);
+    } else {
+        Q.hash(hasher);
+        value.hash(hasher);
+        Q.hash(hasher);
+    }
+}
+
+fn u64_to_string(num: u64) -> String {
+    let mut num = num;
+    let mut bytes = Bytes::new();
+    match num {
+        0 => String::from_ascii_str("0"),
+        _ => {
+            while num > 0 {
+                let mut be_bytes = (num % 10).to_be_bytes();
+                let digit = be_bytes.pop().unwrap() + 48;
+                bytes.push(digit);
+                num /= 10;
+            }
+            // there's no for loop???
+            let len = bytes.len();
+            let mut i = 0;
+            while i < len / 2 {
+                bytes.swap(i, len - i - 1);
+                i += 1;
+            }
+            String::from(bytes)
+        }
     }
 }
 
@@ -110,11 +251,28 @@ impl ClaimParameters {
         let mut hasher = Hasher::new();
         // NOTE msg len will always be 32 bytes due to keccak256-hashing stuff first. Furthermore
         // sway compiler cant handle \x19 and \n so I need to append special characters manually
-        25u8.hash(hasher); // \x19
+        X19.hash(hasher); // \x19
         "Ethereum Signed Message:".hash(hasher);
-        10u8.hash(hasher); // \n
+        NEWLINE.hash(hasher); // \n
         "32".hash(hasher); // length
         hashed_msg.hash(hasher);
         hasher.keccak256()
     }
+}
+
+#[test]
+fn convert_to_string() {
+    assert(u64_to_string(0) == String::from_ascii_str("0"));
+    assert(u64_to_string(1) == String::from_ascii_str("1"));
+    assert(u64_to_string(2) == String::from_ascii_str("2"));
+    assert(u64_to_string(3) == String::from_ascii_str("3"));
+    assert(u64_to_string(10) == String::from_ascii_str("10"));
+    assert(u64_to_string(11) == String::from_ascii_str("11"));
+    assert(u64_to_string(12) == String::from_ascii_str("12"));
+    assert(u64_to_string(13) == String::from_ascii_str("13"));
+    assert(u64_to_string(100) == String::from_ascii_str("100"));
+    assert(u64_to_string(11111) == String::from_ascii_str("11111"));
+    assert(
+        u64_to_string(9876543210) == String::from_ascii_str("9876543210"),
+    );
 }

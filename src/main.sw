@@ -13,7 +13,6 @@ use ::interfaces::token::*;
 use ownership::Ownership;
 use src_20::SRC20;
 use src_5::{SRC5, State};
-use src_7::{Metadata, SRC7};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
@@ -227,16 +226,12 @@ impl SRC20 for Contract {
     }
 }
 
+// NOTE SRC-7 throws runtime errors saying
+// InvalidType("Enums currently support only one level deep heap types.
+// Thus, I'm omitting the SRC-7 impl for metadata retrieval
 impl PinMetadata for Contract {
     #[storage(read)]
     fn metadata(pin_id: u64) -> String {
         _metadata(pin_id, storage.metadata)
     }
 }
-
-//impl SRC7 for Contract {
-//    #[storage(read)]
-//    fn metadata(asset: AssetId, key: String) -> Option<Metadata> {
-//        Some(_metadata(asset, key, storage.metadata))
-//    }
-//}

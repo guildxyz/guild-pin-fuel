@@ -8,4 +8,3 @@ name = "guild-pin-contract"
 ownership = { git = "https://github.com/FuelLabs/sway-libs", rev = "a585660" }
 src_20 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.2.0" }
 src_5 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.2.0" }
-src_7 = { git = "https://github.com/FuelLabs/sway-standards", tag = "v0.2.0" }

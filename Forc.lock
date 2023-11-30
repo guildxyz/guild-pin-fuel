@@ -9,7 +9,6 @@ dependencies = [
     "ownership",
     "src_20",
     "src_5",
-    "src_7",
     "std",
 ]
 
@@ -28,11 +27,6 @@ dependencies = ["std"]
 
 [[package]]
 name = "src_5"
-source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d"
-dependencies = ["std"]
-
-[[package]]
-name = "src_7"
 source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d"
 dependencies = ["std"]
 

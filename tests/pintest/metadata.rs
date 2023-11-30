@@ -29,25 +29,33 @@ async fn metadata_ok() {
 
     let metadata = contract.metadata(0).await.unwrap();
     println!("{}", metadata);
+    let token_uri: TokenUri = serde_json::from_str(&metadata).unwrap();
+    assert_eq!(token_uri.name, Action::Joined);
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub enum Action {
     Joined,
+    #[serde(rename = "Admin of")]
     Admin,
+    #[serde(rename = "Owner of")]
     Owner,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct TokenUri {
     pub name: Action,
     pub description: String,
     pub image: String,
-    pub attributes: [Attribute; 4],
+    pub attributes: [Attribute; 6],
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(tag = "trait_type", content = "value")]
+#[serde(rename_all = "camelCase")]
 pub enum Attribute {
+    Type(Action),
+    GuildId(u64),
     UserId(u64),
     Rank(u64),
     ActionDate(u64),
