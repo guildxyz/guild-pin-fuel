@@ -240,28 +240,19 @@ impl GuildPinContract {
             .map(|r| r.value)
     }
 
-    /*
-    pub async fn metadata(&self, pin_id: u64) -> Result<String> {
-        self.unsafe_metadata(self.asset_id(), String::from_utf8_lossy(&pin_id.to_be_bytes()).to_string())
-            .await
-    }
-
-    pub async fn unsafe_metadata(&self, asset_id: AssetId, pin_id: String) -> Result<String> {
-        self.0
-            .methods()
-            .metadata(asset_id, pin_id)
-            .call()
-            .await
-            .map(|r| match r.value {
-                Some(Metadata::String(string)) => string,
-                _ => unreachable!(),
-            })
-    }
-    */
     pub async fn metadata(&self, pin_id: u64) -> Result<String> {
         self.0
             .methods()
             .metadata(pin_id)
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn encoded_metadata(&self, pin_id: u64) -> Result<String> {
+        self.0
+            .methods()
+            .encoded_metadata(pin_id)
             .call()
             .await
             .map(|r| r.value)

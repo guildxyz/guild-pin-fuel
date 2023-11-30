@@ -237,4 +237,9 @@ impl PinMetadata for Contract {
     fn metadata(pin_id: u64) -> String {
         _metadata(pin_id, storage.metadata)
     }
+
+    #[storage(read)]
+    fn encoded_metadata(pin_id: u64) -> String {
+        _encoded_metadata(pin_id, storage.metadata)
+    }
 }

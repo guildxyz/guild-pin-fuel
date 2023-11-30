@@ -5,6 +5,7 @@ authors = ["PopcornPaws"]
 edition = "2021"
 
 [dev-dependencies]
+base64 = "0.21"
 fuels = "0.50"
 hex = "0.4"
 serde = { version = "1", features = ["derive"] }

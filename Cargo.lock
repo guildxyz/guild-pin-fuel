@@ -2032,6 +2032,7 @@ dependencies = [
 name = "guild-pin-contract"
 version = "0.0.0"
 dependencies = [
+ "base64 0.21.5",
  "fuels",
  "hex",
  "serde",

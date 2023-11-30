@@ -6,6 +6,8 @@ use std::convert::TryFrom;
 use std::primitive_conversions::u8::*;
 use std::string::String;
 
+// NOTE this is far from optimal, the only goal was for this
+// to work. If time allows this could be optimized.
 pub fn base64(input: String) -> String {
     let input = input.as_bytes();
     let mut result = Bytes::new();
@@ -68,9 +70,7 @@ fn split(input: Bytes) -> Bytes {
                 .push(
                     (input
                         .get(0)
-                        .unwrap()
-                    & 3) << 4
-                    | input
+                        .unwrap() & 3) << 4 | input
                         .get(1)
                         .unwrap() >> 4,
                 );
@@ -82,9 +82,7 @@ fn split(input: Bytes) -> Bytes {
                 .push(
                     (input
                         .get(0)
-                        .unwrap()
-                    & 3) << 4
-                    | input
+                        .unwrap() & 3) << 4 | input
                         .get(1)
                         .unwrap() >> 4,
                 );
@@ -92,9 +90,7 @@ fn split(input: Bytes) -> Bytes {
                 .push(
                     (input
                         .get(1)
-                        .unwrap()
-                    & 15) << 2
-                    | input
+                        .unwrap() & 15) << 2 | input
                         .get(2)
                         .unwrap() >> 6,
                 );

@@ -2,6 +2,7 @@ use crate::check_event;
 use crate::contract::{GuildPinContract, PinMinted};
 use crate::parameters::ParametersBuilder;
 use crate::utils::ClaimBuilder;
+use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::types::Address;
 use serde::{Deserialize, Serialize};
 
@@ -27,8 +28,11 @@ async fn metadata_ok() {
         },
     );
 
+    let encoded_metadata = contract.encoded_metadata(0).await.unwrap();
+    let decoded_metadata = String::from_utf8(STANDARD.decode(encoded_metadata).unwrap()).unwrap();
     let metadata = contract.metadata(0).await.unwrap();
     println!("{}", metadata);
+    assert_eq!(metadata, decoded_metadata);
     let token_uri: TokenUri = serde_json::from_str(&metadata).unwrap();
     assert_eq!(token_uri.name, Action::Joined);
     assert_eq!(
