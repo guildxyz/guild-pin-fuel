@@ -1,7 +1,7 @@
-use crate::check_event;
 use crate::contract::{GuildPinContract, PinMinted};
 use crate::parameters::ParametersBuilder;
 use crate::utils::ClaimBuilder;
+use crate::{check_error, check_event};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::types::Address;
 use serde::{Deserialize, Serialize};
@@ -81,6 +81,31 @@ async fn metadata_ok() {
     let json_value: serde_json::Value = serde_json::from_str(&metadata).unwrap();
     assert_eq!(json_value["attributes"][4]["display_type"], "date");
     assert_eq!(json_value["attributes"][5]["display_type"], "date");
+}
+
+#[tokio::test]
+async fn metadata_nonexistent_fails() {
+    let parameters = ParametersBuilder::new().build().await;
+    let contract = GuildPinContract::init(&parameters).await;
+
+    let error = contract.metadata(0).await.unwrap_err();
+    check_error(error, "PinIdDoesNotExist");
+
+    let alice: Address = parameters.alice.address().into();
+    let clp = ClaimBuilder::new(alice, contract.contract_id()).build();
+
+    let signature = parameters.sign_claim(&clp);
+    contract
+        .claim(&parameters.alice, clp.clone(), signature)
+        .await
+        .unwrap();
+
+    contract.metadata(0).await.unwrap();
+
+    contract.burn(&parameters.alice, 0).await.unwrap();
+
+    let error = contract.metadata(0).await.unwrap_err();
+    check_error(error, "PinIdDoesNotExist");
 }
 
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, PartialEq, Eq)]

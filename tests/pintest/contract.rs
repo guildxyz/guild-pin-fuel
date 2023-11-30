@@ -176,6 +176,15 @@ impl GuildPinContract {
             .await
     }
 
+    pub async fn burn(&self, caller: &WalletUnlocked, pin_id: u64) -> Result<FuelCallResponse<()>> {
+        self.0
+            .with_account(caller.clone())?
+            .methods()
+            .burn(pin_id)
+            .call()
+            .await
+    }
+
     pub async fn balance_of(&self, id: Address) -> Result<u64> {
         self.0
             .methods()
@@ -256,5 +265,50 @@ impl GuildPinContract {
             .call()
             .await
             .map(|r| r.value)
+    }
+
+    pub async fn total_assets(&self) -> Result<u64> {
+        self.0
+            .methods()
+            .total_assets()
+            .call()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn total_supply(&self) -> Result<u64> {
+        self.0
+            .methods()
+            .total_supply(self.asset_id())
+            .call()
+            .await
+            .map(|r| r.value.unwrap())
+    }
+
+    pub async fn name(&self) -> Result<String> {
+        self.0
+            .methods()
+            .name(self.asset_id())
+            .call()
+            .await
+            .map(|r| r.value.unwrap())
+    }
+
+    pub async fn symbol(&self) -> Result<String> {
+        self.0
+            .methods()
+            .symbol(self.asset_id())
+            .call()
+            .await
+            .map(|r| r.value.unwrap())
+    }
+
+    pub async fn decimals(&self) -> Result<u8> {
+        self.0
+            .methods()
+            .decimals(self.asset_id())
+            .call()
+            .await
+            .map(|r| r.value.unwrap())
     }
 }

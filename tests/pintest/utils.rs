@@ -102,6 +102,11 @@ impl ClaimBuilder {
         }
     }
 
+    pub fn action(mut self, action: GuildAction) -> Self {
+        self.action = action;
+        self
+    }
+
     pub fn admin_treasury(mut self, treasury: Identity) -> Self {
         self.admin_treasury = treasury;
         self
@@ -114,6 +119,11 @@ impl ClaimBuilder {
 
     pub fn user_id(mut self, user_id: u64) -> Self {
         self.user_id = user_id;
+        self
+    }
+
+    pub fn guild_id(mut self, guild_id: u64) -> Self {
+        self.guild_id = guild_id;
         self
     }
 

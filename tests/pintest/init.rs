@@ -17,6 +17,13 @@ async fn init_by_owner_success() {
             fee: parameters.fee,
         },
     );
+
+    // sanity src20 tests
+    assert_eq!(contract.total_assets().await.unwrap(), 1);
+    assert_eq!(contract.decimals().await.unwrap(), 0);
+    assert_eq!(contract.name().await.unwrap(), "Guild Pin");
+    assert_eq!(contract.symbol().await.unwrap(), "GUILD");
+    assert_eq!(contract.total_supply().await.unwrap(), 0);
 }
 
 #[tokio::test]

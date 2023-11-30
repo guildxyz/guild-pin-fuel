@@ -1,6 +1,7 @@
 #![warn(clippy::all)]
 #![warn(clippy::dbg_macro)]
 
+pub mod burn;
 pub mod claim;
 pub mod contract;
 pub mod fee;
