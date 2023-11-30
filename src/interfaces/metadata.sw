@@ -5,7 +5,7 @@ use ::common::pin::PinData;
 use ::interfaces::token::TokenError;
 
 use std::call_frames::contract_id;
-use std::hash::Hash;
+use std::hash::{Hash, Hasher};
 use std::string::String;
 
 abi PinMetadata {
@@ -27,6 +27,10 @@ pub fn _metadata(pin_id: u64, key: StorageKey<StorageMap<u64, PinData>>) -> Stri
 
 #[storage(read)]
 pub fn _encoded_metadata(pin_id: u64, key: StorageKey<StorageMap<u64, PinData>>) -> String {
+    let mut hasher = Hasher::new();
+    "data:application/json;base64,".hash(hasher);
     let json_metadata = _metadata(pin_id, key);
-    base64(json_metadata)
+    base64(json_metadata).hash(hasher);
+
+    String::from(hasher.bytes)
 }

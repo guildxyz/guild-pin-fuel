@@ -28,7 +28,9 @@ async fn metadata_ok() {
         },
     );
 
-    let encoded_metadata = contract.encoded_metadata(0).await.unwrap();
+    let mut header = contract.encoded_metadata(0).await.unwrap();
+    let encoded_metadata = header.split_off(29);
+    assert_eq!(header, "data:application/json;base64,");
     let decoded_metadata = String::from_utf8(STANDARD.decode(encoded_metadata).unwrap()).unwrap();
     let metadata = contract.metadata(0).await.unwrap();
     println!("{}", metadata);
