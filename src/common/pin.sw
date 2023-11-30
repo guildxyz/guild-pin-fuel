@@ -49,7 +49,8 @@ impl PinData {
         Q.hash(hasher);
         "This is an onchain proof that you".hash(hasher);
         self.action.to_description().hash(hasher);
-        from_str_array(self.guild_name).hash(hasher);
+        unpad(String::from_ascii_str(from_str_array(self.guild_name)))
+            .hash(hasher);
         " on Guild.xyz".hash(hasher);
         Q.hash(hasher);
         COMMA.hash(hasher);
@@ -60,7 +61,8 @@ impl PinData {
         COLON.hash(hasher);
         Q.hash(hasher);
         "ipfs://".hash(hasher);
-        from_str_array(self.cid).hash(hasher);
+        unpad(String::from_ascii_str(from_str_array(self.cid)))
+            .hash(hasher);
         Q.hash(hasher);
         COMMA.hash(hasher);
         // attributes
@@ -164,6 +166,17 @@ fn u64_to_string(num: u64) -> String {
     }
 }
 
+fn unpad(s: String) -> String {
+    let mut bytes = s.as_bytes();
+    let mut len = bytes.len();
+    // space = 32 (padding character)
+    while len > 0 && bytes.get(len - 1).unwrap() == 32 {
+        let _ = bytes.pop();
+        len = bytes.len();
+    }
+    String::from(bytes)
+}
+
 #[test]
 fn convert_to_string() {
     assert(u64_to_string(0) == String::from_ascii_str("0"));
@@ -178,5 +191,21 @@ fn convert_to_string() {
     assert(u64_to_string(11111) == String::from_ascii_str("11111"));
     assert(
         u64_to_string(9876543210) == String::from_ascii_str("9876543210"),
+    );
+}
+
+#[test]
+fn unpad_string() {
+    assert(
+        unpad(String::from_ascii_str("abc")) == String::from_ascii_str("abc"),
+    );
+    assert(
+        unpad(String::from_ascii_str(" ")) == String::from_ascii_str(""),
+    );
+    assert(
+        unpad(String::from_ascii_str("    ")) == String::from_ascii_str(""),
+    );
+    assert(
+        unpad(String::from_ascii_str("hello       ")) == String::from_ascii_str("hello"),
     );
 }
