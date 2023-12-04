@@ -1,4 +1,5 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
+use fuels::accounts::fuel_crypto::fuel_types::Salt;
 use fuels::prelude::Address;
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
@@ -14,6 +15,7 @@ async fn main() {
         .owner_file("../wallets/fuel-tn-deployer-sk")
         .treasury_file("../wallets/fuel-tn-treasury-sk")
         .url(TESTNET_URL)
+        .salt(Salt::new([1u8; 32]))
         .build()
         .await;
 

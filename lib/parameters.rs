@@ -1,5 +1,6 @@
 use crate::contract::ClaimParameters;
 use crate::utils::hash_params;
+use fuels::accounts::fuel_crypto::fuel_types::Salt;
 use fuels::accounts::fuel_crypto::SecretKey;
 use fuels::accounts::provider::Provider;
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
@@ -17,6 +18,7 @@ pub struct ParametersBuilder {
     pub owner_sk: Option<SecretKey>,
     pub treasury_sk: Option<SecretKey>,
     pub url: String,
+    pub salt: Salt,
 }
 
 impl Default for ParametersBuilder {
@@ -29,6 +31,7 @@ impl Default for ParametersBuilder {
             owner_sk: None,
             treasury_sk: None,
             url: String::new(),
+            salt: Salt::default(),
         }
     }
 }
@@ -73,6 +76,11 @@ impl ParametersBuilder {
         self
     }
 
+    pub fn salt(mut self, salt: Salt) -> Self {
+        self.salt = salt;
+        self
+    }
+
     pub async fn build(self) -> Parameters {
         let provider = Provider::connect(&self.url).await.unwrap();
         Parameters {
@@ -88,6 +96,7 @@ impl ParametersBuilder {
             signer: EthSigner::new(&self.signer_seed),
             signer_alt: EthSigner::new(&self.signer_alt_seed),
             fee: self.fee,
+            salt: self.salt,
             alice: WalletUnlocked::new_random(Some(provider.clone())),
             bob: WalletUnlocked::new_random(Some(provider.clone())),
             charlie: WalletUnlocked::new_random(Some(provider)),
@@ -113,6 +122,7 @@ impl ParametersBuilder {
             signer: EthSigner::new(&self.signer_seed),
             signer_alt: EthSigner::new(&self.signer_alt_seed),
             fee: self.fee,
+            salt: self.salt,
             alice: wallets.pop().unwrap(),
             bob: wallets.pop().unwrap(),
             charlie: wallets.pop().unwrap(),
@@ -127,6 +137,7 @@ pub struct Parameters {
     pub signer: EthSigner,
     pub signer_alt: EthSigner,
     pub fee: u64,
+    pub salt: Salt,
     pub alice: WalletUnlocked,
     pub bob: WalletUnlocked,
     pub charlie: WalletUnlocked,

@@ -49,7 +49,8 @@ impl GuildPinContract {
         // deploy contract
         let configuration = LoadConfiguration::default()
             .with_storage_configuration(storage_configuration)
-            .with_configurables(configurables);
+            .with_configurables(configurables)
+            .with_salt(parameters.salt);
 
         Contract::load_from(CONTRACT_BINARY_PATH, configuration).unwrap()
     }
@@ -66,7 +67,7 @@ impl GuildPinContract {
             .await
             .unwrap();
 
-        Self(GuildPin::new(contract_id, parameters.contract.clone()))
+        Self(GuildPin::new(contract_id, parameters.owner.clone()))
     }
 
     pub async fn init(parameters: &Parameters) -> Self {
