@@ -4,7 +4,7 @@ use guild_pin_contract::parameters::ParametersBuilder;
 
 #[tokio::test]
 async fn set_signer_success() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let owner = contract.owner().await.unwrap();
@@ -32,7 +32,7 @@ async fn set_signer_success() {
 
 #[tokio::test]
 async fn set_signer_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract

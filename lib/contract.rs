@@ -18,7 +18,15 @@ abigen!(Contract(
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);
 
 impl GuildPinContract {
-    fn load(configurables: GuildPinConfigurables) -> Contract {
+    fn load(parameters: &Parameters) -> Contract {
+        // initialize configurables
+        let configurables = GuildPinConfigurables::new()
+            .with_OWNER(Identity::Address(Address::from(parameters.owner.address())))
+            .with_TREASURY(Identity::Address(Address::from(
+                parameters.treasury.address(),
+            )))
+            .with_SIGNER(parameters.signer_b256())
+            .with_FEE(parameters.fee);
         // load storage configuration
         let storage_configuration = StorageConfiguration::default()
             .add_slot_overrides_from_file(CONTRACT_STORAGE_PATH)
@@ -33,24 +41,12 @@ impl GuildPinContract {
     }
 
     pub fn new(parameters: &Parameters) -> Self {
-        let contract = Self::load(GuildPinConfigurables::new());
-        Self(GuildPin::new(
-            contract.contract_id(),
-            parameters.owner.clone(),
-        ))
+        let contract_id = Self::load(parameters).contract_id();
+        Self(GuildPin::new(contract_id, parameters.owner.clone()))
     }
 
     pub async fn deploy(parameters: &Parameters) -> Self {
-        // initialize configurables
-        let configurables = GuildPinConfigurables::new()
-            .with_OWNER(Identity::Address(Address::from(parameters.owner.address())))
-            .with_TREASURY(Identity::Address(Address::from(
-                parameters.treasury.address(),
-            )))
-            .with_SIGNER(parameters.signer_b256())
-            .with_FEE(parameters.fee);
-
-        let contract = Self::load(configurables);
+        let contract = Self::load(parameters);
         let contract_id = contract
             .deploy(&parameters.owner, TxParameters::default())
             .await

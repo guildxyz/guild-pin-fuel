@@ -4,7 +4,7 @@ use guild_pin_contract::parameters::ParametersBuilder;
 
 #[tokio::test]
 async fn set_treasury_success() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let treasury = contract.treasury().await.unwrap();
@@ -28,7 +28,7 @@ async fn set_treasury_success() {
 
 #[tokio::test]
 async fn set_treasury_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract

@@ -1,16 +1,22 @@
 use crate::contract::ClaimParameters;
 use crate::utils::hash_params;
-use fuels::prelude::{
-    launch_custom_provider_and_get_wallets, Provider, WalletUnlocked, WalletsConfig,
-};
+use fuels::accounts::fuel_crypto::SecretKey;
+use fuels::accounts::provider::Provider;
+use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
 use fuels::types::{Bits256, EvmAddress, Identity, B512};
 use signrs::eth::EthSigner;
+
+use std::path::Path;
+use std::str::FromStr;
 
 pub struct ParametersBuilder {
     pub fee: u64,
     pub genesis_balance: u64,
     pub signer_seed: [u8; 32],
     pub signer_alt_seed: [u8; 32],
+    pub owner_sk: Option<SecretKey>,
+    pub treasury_sk: Option<SecretKey>,
+    pub url: String,
 }
 
 impl Default for ParametersBuilder {
@@ -20,6 +26,9 @@ impl Default for ParametersBuilder {
             genesis_balance: 1_000_000_000,
             signer_seed: [11u8; 32],
             signer_alt_seed: [22u8; 32],
+            owner_sk: None,
+            treasury_sk: None,
+            url: String::new(),
         }
     }
 }
@@ -29,17 +38,63 @@ impl ParametersBuilder {
         Self::default()
     }
 
-    pub fn with_fee(mut self, fee: u64) -> Self {
+    pub fn fee(mut self, fee: u64) -> Self {
         self.fee = fee;
         self
     }
 
-    pub fn with_genesis_balance(mut self, genesis_balance: u64) -> Self {
+    pub fn genesis_balance(mut self, genesis_balance: u64) -> Self {
         self.genesis_balance = genesis_balance;
         self
     }
 
+    pub fn signer_file(mut self, path: impl AsRef<Path>) -> Self {
+        let signer_seed_string = std::fs::read_to_string(path).unwrap();
+        self.signer_seed = serde_json::from_str(&signer_seed_string).unwrap();
+        self
+    }
+
+    pub fn owner_file(mut self, path: impl AsRef<Path>) -> Self {
+        let secret_key_string = std::fs::read_to_string(path).unwrap();
+        let secret_key = SecretKey::from_str(&secret_key_string).unwrap();
+        self.owner_sk = Some(secret_key);
+        self
+    }
+
+    pub fn treasury_file(mut self, path: impl AsRef<Path>) -> Self {
+        let secret_key_string = std::fs::read_to_string(path).unwrap();
+        let secret_key = SecretKey::from_str(&secret_key_string).unwrap();
+        self.treasury_sk = Some(secret_key);
+        self
+    }
+
+    pub fn url(mut self, url: &str) -> Self {
+        self.url = url.to_string();
+        self
+    }
+
     pub async fn build(self) -> Parameters {
+        let provider = Provider::connect(&self.url).await.unwrap();
+        Parameters {
+            contract: WalletUnlocked::new_random(Some(provider.clone())),
+            owner: WalletUnlocked::new_from_private_key(
+                self.owner_sk.unwrap(),
+                Some(provider.clone()),
+            ),
+            treasury: WalletUnlocked::new_from_private_key(
+                self.treasury_sk.unwrap(),
+                Some(provider.clone()),
+            ),
+            signer: EthSigner::new(&self.signer_seed),
+            signer_alt: EthSigner::new(&self.signer_alt_seed),
+            fee: self.fee,
+            alice: WalletUnlocked::new_random(Some(provider.clone())),
+            bob: WalletUnlocked::new_random(Some(provider.clone())),
+            charlie: WalletUnlocked::new_random(Some(provider)),
+        }
+    }
+
+    pub async fn test(self) -> Parameters {
         let number_of_wallets = 6;
         let coins_per_wallet = 1;
         let wallet_config = WalletsConfig::new(

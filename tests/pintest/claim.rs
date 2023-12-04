@@ -9,9 +9,9 @@ async fn claim_successful() {
     let fee = 20;
     let genesis_balance = 100;
     let parameters = ParametersBuilder::new()
-        .with_fee(fee)
-        .with_genesis_balance(genesis_balance)
-        .build()
+        .fee(fee)
+        .genesis_balance(genesis_balance)
+        .test()
         .await;
     let contract = GuildPinContract::init(&parameters).await;
 
@@ -190,7 +190,7 @@ async fn claim_successful() {
 
 #[tokio::test]
 async fn claim_uninitialized_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::deploy(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -207,7 +207,7 @@ async fn claim_uninitialized_fails() {
 
 #[tokio::test]
 async fn claim_double_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -246,7 +246,7 @@ async fn claim_double_fails() {
 
 #[tokio::test]
 async fn claim_with_invalid_signature_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -262,7 +262,7 @@ async fn claim_with_invalid_signature_fails() {
 
 #[tokio::test]
 async fn claim_with_invalid_fee_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -285,7 +285,7 @@ async fn claim_with_invalid_fee_fails() {
 
 #[tokio::test]
 async fn claim_with_expired_signature_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -303,7 +303,7 @@ async fn claim_with_expired_signature_fails() {
 
 #[tokio::test]
 async fn claim_with_invalid_contract_id_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();

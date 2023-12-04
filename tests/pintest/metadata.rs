@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 
 #[tokio::test]
 async fn metadata_ok() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -85,7 +85,7 @@ async fn metadata_ok() {
 
 #[tokio::test]
 async fn metadata_nonexistent_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract.metadata(0).await.unwrap_err();

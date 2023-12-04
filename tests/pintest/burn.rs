@@ -6,7 +6,7 @@ use guild_pin_contract::utils::ClaimBuilder;
 
 #[tokio::test]
 async fn burn_successful() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -94,7 +94,7 @@ async fn burn_successful() {
 
 #[tokio::test]
 async fn burn_with_not_owner_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -112,7 +112,7 @@ async fn burn_with_not_owner_fails() {
 
 #[tokio::test]
 async fn burn_double_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -131,7 +131,7 @@ async fn burn_double_fails() {
 
 #[tokio::test]
 async fn burn_non_existent_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
@@ -152,8 +152,8 @@ async fn flow_successful() {
     // alice, bob, charlie all claim some pins and in the end we check the storage
     let genesis_balance = 100_000;
     let parameters = ParametersBuilder::new()
-        .with_genesis_balance(genesis_balance)
-        .build()
+        .genesis_balance(genesis_balance)
+        .test()
         .await;
     let contract = GuildPinContract::init(&parameters).await;
 

@@ -5,7 +5,7 @@ use guild_pin_contract::parameters::ParametersBuilder;
 #[tokio::test]
 async fn set_fee_success() {
     let new_fee = 200;
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let contract_fee = contract.fee().await.unwrap();
@@ -26,7 +26,7 @@ async fn set_fee_success() {
 
 #[tokio::test]
 async fn set_fee_fails() {
-    let parameters = ParametersBuilder::new().build().await;
+    let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
     let error = contract.set_fee(&parameters.bob, 0).await.unwrap_err();
