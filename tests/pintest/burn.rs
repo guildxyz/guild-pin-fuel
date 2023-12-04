@@ -1,8 +1,8 @@
-use crate::contract::{GuildAction, GuildPinContract, PinBurned, PinMinted};
-use crate::parameters::ParametersBuilder;
-use crate::utils::ClaimBuilder;
 use crate::{check_error, check_event};
 use fuels::types::{Address, AssetId};
+use guild_pin_contract::contract::{GuildAction, GuildPinContract, PinBurned, PinMinted};
+use guild_pin_contract::parameters::ParametersBuilder;
+use guild_pin_contract::utils::ClaimBuilder;
 
 #[tokio::test]
 async fn burn_successful() {

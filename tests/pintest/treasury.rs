@@ -1,6 +1,6 @@
-use crate::contract::{GuildPinContract, TreasuryChanged};
-use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
+use guild_pin_contract::contract::{GuildPinContract, TreasuryChanged};
+use guild_pin_contract::parameters::ParametersBuilder;
 
 #[tokio::test]
 async fn set_treasury_success() {

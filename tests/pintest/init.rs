@@ -1,6 +1,6 @@
-use crate::contract::{ContractInitialized, GuildPinContract};
-use crate::parameters::ParametersBuilder;
 use crate::{check_error, check_event};
+use guild_pin_contract::contract::{ContractInitialized, GuildPinContract};
+use guild_pin_contract::parameters::ParametersBuilder;
 
 #[tokio::test]
 async fn init_by_owner_success() {

@@ -1,9 +1,9 @@
-use crate::contract::{GuildPinContract, PinMinted};
-use crate::parameters::ParametersBuilder;
-use crate::utils::ClaimBuilder;
 use crate::{check_error, check_event};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::types::Address;
+use guild_pin_contract::contract::{GuildPinContract, PinMinted};
+use guild_pin_contract::parameters::ParametersBuilder;
+use guild_pin_contract::utils::ClaimBuilder;
 use serde::{Deserialize, Serialize};
 
 #[tokio::test]

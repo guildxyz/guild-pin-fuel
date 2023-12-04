@@ -26,6 +26,7 @@ abigen!(Contract(
 
 #[tokio::main]
 async fn main() {
+    /*
     let secret_key_string = std::fs::read_to_string("../wallets/fuel-tn-deployer-sk").unwrap();
     let secret_key = SecretKey::from_str(&secret_key_string).unwrap();
     let provider = Provider::connect(TESTNET_URL).await.unwrap();
@@ -66,7 +67,7 @@ async fn main() {
     let configuration = LoadConfiguration::default()
         .with_storage_configuration(storage_configuration)
         .with_configurables(configurables);
-    
+
     //let contract_id = Contract::load_from(CONTRACT_BINARY_PATH, configuration)
     //    .unwrap()
     //    .deploy(&deployer, TxParameters::default())
@@ -81,4 +82,5 @@ async fn main() {
     println!("{:?}", response);
     let owner = contract.methods().owner().call().await.unwrap();
     println!("OWNER: {:?}", owner);
+    */
 }
