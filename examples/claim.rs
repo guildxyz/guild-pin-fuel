@@ -21,7 +21,11 @@ async fn main() {
     println!("TREASURY: {}", Address::from(parameters.treasury.address()));
     println!("SIGNER: 0x{}", hex::encode(parameters.signer.address()));
 
-    let contract = GuildPinContract::new(&parameters);
+    let contract = if std::env::var("DEPLOY").is_ok() {
+        GuildPinContract::init(&parameters).await
+    } else {
+        GuildPinContract::new(&parameters)
+    };
 
     println!("OWNER QUERY: {:?}", contract.owner().await.unwrap());
     println!("TREASURY QUERY: {:?}", contract.treasury().await.unwrap());

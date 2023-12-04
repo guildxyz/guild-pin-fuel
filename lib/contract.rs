@@ -7,9 +7,23 @@ use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
 use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
+#[cfg(not(release))]
 const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
+#[cfg(not(release))]
 const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
 
+#[cfg(not(release))]
+abigen!(Contract(
+    name = "GuildPin",
+    abi = "./out/debug/guild-pin-contract-abi.json"
+));
+
+#[cfg(release)]
+const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
+#[cfg(release)]
+const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
+
+#[cfg(release)]
 abigen!(Contract(
     name = "GuildPin",
     abi = "./out/debug/guild-pin-contract-abi.json"

@@ -40,6 +40,7 @@ fn params_to_bytes(params: &ClaimParameters) -> Vec<u8> {
     bytes.extend_from_slice(params.guild_name.as_ref());
     bytes.extend_from_slice(&params.created_at.to_be_bytes());
     bytes.extend_from_slice(&params.signed_at.to_be_bytes());
+    bytes.extend_from_slice(&params.chain_id.to_be_bytes());
     bytes.extend_from_slice(params.cid.as_ref());
     hash_identity(&params.admin_treasury, &mut bytes);
     bytes.extend_from_slice(&params.admin_fee.to_be_bytes());
@@ -71,6 +72,7 @@ pub struct ClaimBuilder {
     pub guild_name: SizedAsciiString<64>,
     pub created_at: u64,
     pub signed_at: u64,
+    pub chain_id: u64,
     pub cid: SizedAsciiString<64>,
     pub admin_treasury: Identity,
     pub admin_fee: u64,
@@ -96,6 +98,7 @@ impl ClaimBuilder {
                     .as_secs(),
             ),
             cid: SizedAsciiString::new_with_right_whitespace_padding(CID64.to_string()).unwrap(),
+            chain_id: 9999,
             admin_treasury: Identity::ContractId(contract_id),
             admin_fee: 0,
             contract_id,
@@ -122,6 +125,11 @@ impl ClaimBuilder {
         self
     }
 
+    pub fn chain_id(mut self, chain_id: u64) -> Self {
+        self.chain_id = chain_id;
+        self
+    }
+
     pub fn guild_id(mut self, guild_id: u64) -> Self {
         self.guild_id = guild_id;
         self
@@ -141,6 +149,7 @@ impl ClaimBuilder {
             guild_name: self.guild_name,
             created_at: self.created_at,
             signed_at: self.signed_at,
+            chain_id: self.chain_id,
             cid: self.cid,
             admin_treasury: self.admin_treasury,
             admin_fee: self.admin_fee,

@@ -180,7 +180,9 @@ async fn flow_successful() {
         .guild_id(guild_0)
         .admin_treasury(admin_treasury.clone())
         .admin_fee(admin_fee)
+        .chain_id(u64::MAX)
         .build();
+    assert_eq!(claim.chain_id, u64::MAX);
     let signature = parameters.sign_claim(&claim);
     contract
         .claim(&parameters.alice, claim, signature)

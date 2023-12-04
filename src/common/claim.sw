@@ -14,6 +14,7 @@ pub struct ClaimParameters {
     guild_name: str[64],
     created_at: u64,
     signed_at: u64,
+    chain_id: u64,
     cid: str[64],
     admin_treasury: Identity,
     admin_fee: u64,
@@ -29,6 +30,7 @@ impl Hash for ClaimParameters {
         from_str_array(self.guild_name).hash(state);
         self.created_at.hash(state);
         self.signed_at.hash(state);
+        self.chain_id.hash(state);
         from_str_array(self.cid).hash(state);
         self.admin_treasury.hash(state);
         self.admin_fee.hash(state);
