@@ -191,7 +191,7 @@ async fn claim_successful() {
 #[tokio::test]
 async fn claim_uninitialized_fails() {
     let parameters = ParametersBuilder::new().build().await;
-    let contract = GuildPinContract::new(&parameters).await;
+    let contract = GuildPinContract::deploy(&parameters).await;
 
     let alice: Address = parameters.alice.address().into();
     let clp = ClaimBuilder::new(alice, contract.contract_id()).build();

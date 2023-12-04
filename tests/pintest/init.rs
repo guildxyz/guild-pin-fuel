@@ -5,7 +5,7 @@ use guild_pin_contract::parameters::ParametersBuilder;
 #[tokio::test]
 async fn init_by_owner_success() {
     let parameters = ParametersBuilder::new().build().await;
-    let contract = GuildPinContract::new(&parameters).await;
+    let contract = GuildPinContract::deploy(&parameters).await;
 
     let response = contract.initialize(&parameters.owner).await.unwrap();
     check_event(
@@ -29,7 +29,7 @@ async fn init_by_owner_success() {
 #[tokio::test]
 async fn init_by_random_success() {
     let parameters = ParametersBuilder::new().build().await;
-    let contract = GuildPinContract::new(&parameters).await;
+    let contract = GuildPinContract::deploy(&parameters).await;
 
     let response = contract.initialize(&parameters.alice).await.unwrap();
     let events = response

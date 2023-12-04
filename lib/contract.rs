@@ -18,16 +18,7 @@ abigen!(Contract(
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);
 
 impl GuildPinContract {
-    pub async fn new(parameters: &Parameters) -> Self {
-        // initialize configurables
-        let configurables = GuildPinConfigurables::new()
-            .with_OWNER(Identity::Address(Address::from(parameters.owner.address())))
-            .with_TREASURY(Identity::Address(Address::from(
-                parameters.treasury.address(),
-            )))
-            .with_SIGNER(parameters.signer_b256())
-            .with_FEE(parameters.fee);
-
+    fn load(configurables: GuildPinConfigurables) -> Contract {
         // load storage configuration
         let storage_configuration = StorageConfiguration::default()
             .add_slot_overrides_from_file(CONTRACT_STORAGE_PATH)
@@ -37,8 +28,30 @@ impl GuildPinContract {
         let configuration = LoadConfiguration::default()
             .with_storage_configuration(storage_configuration)
             .with_configurables(configurables);
-        let contract_id = Contract::load_from(CONTRACT_BINARY_PATH, configuration)
-            .unwrap()
+
+        Contract::load_from(CONTRACT_BINARY_PATH, configuration).unwrap()
+    }
+
+    pub fn new(parameters: &Parameters) -> Self {
+        let contract = Self::load(GuildPinConfigurables::new());
+        Self(GuildPin::new(
+            contract.contract_id(),
+            parameters.owner.clone(),
+        ))
+    }
+
+    pub async fn deploy(parameters: &Parameters) -> Self {
+        // initialize configurables
+        let configurables = GuildPinConfigurables::new()
+            .with_OWNER(Identity::Address(Address::from(parameters.owner.address())))
+            .with_TREASURY(Identity::Address(Address::from(
+                parameters.treasury.address(),
+            )))
+            .with_SIGNER(parameters.signer_b256())
+            .with_FEE(parameters.fee);
+
+        let contract = Self::load(configurables);
+        let contract_id = contract
             .deploy(&parameters.owner, TxParameters::default())
             .await
             .unwrap();
@@ -47,7 +60,7 @@ impl GuildPinContract {
     }
 
     pub async fn init(parameters: &Parameters) -> Self {
-        let contract = Self::new(parameters).await;
+        let contract = Self::deploy(parameters).await;
         contract.initialize(&parameters.owner).await.unwrap();
         contract
     }

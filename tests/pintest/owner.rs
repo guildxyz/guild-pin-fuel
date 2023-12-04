@@ -5,7 +5,7 @@ use guild_pin_contract::parameters::ParametersBuilder;
 #[tokio::test]
 async fn set_owner_success() {
     let parameters = ParametersBuilder::new().build().await;
-    let contract = GuildPinContract::new(&parameters).await;
+    let contract = GuildPinContract::deploy(&parameters).await;
 
     let error = contract.owner().await.unwrap_err();
     assert_eq!(error.to_string(), "Invalid data: NotInitialized");
@@ -32,7 +32,7 @@ async fn set_owner_success() {
 #[tokio::test]
 async fn set_owner_fails() {
     let parameters = ParametersBuilder::new().build().await;
-    let contract = GuildPinContract::new(&parameters).await;
+    let contract = GuildPinContract::deploy(&parameters).await;
 
     // try to set owner before initialization
     let error = contract
