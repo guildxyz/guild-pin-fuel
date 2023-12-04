@@ -29,6 +29,8 @@ async fn main() {
         GuildPinContract::new(&parameters)
     };
 
+    println!("CONTRACT ID: {}", contract.contract_id());
+
     println!("OWNER QUERY: {:?}", contract.owner().await.unwrap());
     println!("TREASURY QUERY: {:?}", contract.treasury().await.unwrap());
 
