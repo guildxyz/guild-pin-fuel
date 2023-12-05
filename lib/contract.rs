@@ -7,26 +7,26 @@ use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
 use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
-#[cfg(not(release))]
+#[cfg(debug_assertions)]
 const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
-#[cfg(not(release))]
+#[cfg(debug_assertions)]
 const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
 
-#[cfg(not(release))]
+#[cfg(debug_assertions)]
 abigen!(Contract(
     name = "GuildPin",
     abi = "./out/debug/guild-pin-contract-abi.json"
 ));
 
-#[cfg(release)]
-const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
-#[cfg(release)]
-const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
+#[cfg(not(debug_assertions))]
+const CONTRACT_BINARY_PATH: &str = "./out/release/guild-pin-contract.bin";
+#[cfg(not(debug_assertions))]
+const CONTRACT_STORAGE_PATH: &str = "./out/release/guild-pin-contract-storage_slots.json";
 
-#[cfg(release)]
+#[cfg(not(debug_assertions))]
 abigen!(Contract(
     name = "GuildPin",
-    abi = "./out/debug/guild-pin-contract-abi.json"
+    abi = "./out/release/guild-pin-contract-abi.json"
 ));
 
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);
