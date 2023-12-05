@@ -31,7 +31,7 @@ fn hash_identity(identity: &Identity, bytes: &mut Vec<u8>) {
     }
 }
 
-fn params_to_bytes(params: &ClaimParameters) -> Vec<u8> {
+pub fn params_to_bytes(params: &ClaimParameters) -> Vec<u8> {
     let mut bytes = Vec::new();
     bytes.extend_from_slice(params.recipient.as_slice());
     bytes.push(action_byte(&params.action));
@@ -91,12 +91,10 @@ impl ClaimBuilder {
             )
             .unwrap(),
             created_at: 100_000,
-            signed_at: to_tai64_timestamp(
-                SystemTime::now()
-                    .duration_since(UNIX_EPOCH)
-                    .unwrap()
-                    .as_secs(),
-            ),
+            signed_at: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_secs(),
             cid: SizedAsciiString::new_with_right_whitespace_padding(CID64.to_string()).unwrap(),
             chain_id: 9999,
             admin_treasury: Identity::ContractId(contract_id),
