@@ -1,5 +1,5 @@
 use crate::contract::ClaimParameters;
-use crate::utils::hash_params;
+use crate::utils::{bytes_to_b256, hash_params};
 use fuels::accounts::fuel_crypto::fuel_types::Salt;
 use fuels::accounts::fuel_crypto::SecretKey;
 use fuels::accounts::provider::Provider;
@@ -162,15 +162,11 @@ impl Parameters {
     }
 
     pub fn signer_b256(&self) -> Bits256 {
-        let mut b256 = Bits256::zeroed();
-        b256.0[12..].copy_from_slice(&self.signer.address());
-        b256
+        bytes_to_b256(&self.signer.address())
     }
 
     pub fn signer_alt_b256(&self) -> Bits256 {
-        let mut b256 = Bits256::zeroed();
-        b256.0[12..].copy_from_slice(&self.signer_alt.address());
-        b256
+        bytes_to_b256(&self.signer_alt.address())
     }
 
     pub fn signer_evm(&self) -> EvmAddress {

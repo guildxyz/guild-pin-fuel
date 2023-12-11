@@ -1,12 +1,15 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::accounts::fuel_crypto::fuel_types::Salt;
 use fuels::prelude::Address;
+use fuels::types::EvmAddress;
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
 use guild_pin_contract::parameters::ParametersBuilder;
-use guild_pin_contract::utils::ClaimBuilder;
+use guild_pin_contract::utils::{bytes_to_b256, ClaimBuilder};
 
 const TESTNET_URL: &str = "https://beta-4.fuel.network/";
+
+const BACKEND_SIGNER: &str = "0x989a6C5D84c932E7c9EaE8b4D2d5f378b11C21F7";
 
 #[tokio::main]
 async fn main() {
@@ -40,6 +43,16 @@ async fn main() {
         "SIGNER QUERY: 0x{}",
         hex::encode(&contract.signer().await.unwrap().value().0[12..])
     );
+
+    // set signer
+    if std::env::var("SET_SIGNER").is_ok() {
+        let signer_bytes = hex::decode(BACKEND_SIGNER.trim_start_matches("0x")).unwrap();
+        let new_signer = EvmAddress::from(bytes_to_b256(&signer_bytes));
+        contract
+            .set_signer(&parameters.owner, new_signer)
+            .await
+            .unwrap();
+    }
 
     // set fee
     if std::env::var("SET_FEE").is_ok() {

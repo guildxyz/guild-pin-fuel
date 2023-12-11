@@ -1,5 +1,5 @@
 use crate::contract::{ClaimParameters, GuildAction};
-use fuels::types::{Address, ContractId, Identity, SizedAsciiString};
+use fuels::types::{Address, Bits256, ContractId, Identity, SizedAsciiString};
 use sha3::digest::Digest;
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -54,6 +54,12 @@ fn action_byte(action: &GuildAction) -> u8 {
         GuildAction::Owner => 1,
         GuildAction::Admin => 2,
     }
+}
+
+pub fn bytes_to_b256(address: &[u8]) -> Bits256 {
+    let mut b256 = Bits256::zeroed();
+    b256.0[12..].copy_from_slice(address);
+    b256
 }
 
 pub fn to_tai64_timestamp(unix_seconds: u64) -> u64 {
