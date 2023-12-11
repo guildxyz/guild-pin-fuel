@@ -32,6 +32,10 @@ abigen!(Contract(
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);
 
 impl GuildPinContract {
+    pub fn inner(&self) -> &GuildPin<WalletUnlocked> {
+        &self.0
+    }
+
     fn load(parameters: &Parameters) -> Contract {
         // initialize configurables
         let configurables = GuildPinConfigurables::new()
@@ -111,7 +115,7 @@ impl GuildPinContract {
     }
 
     pub async fn owner(&self) -> Result<Identity> {
-        let state = self.0.methods().owner().call().await?.value;
+        let state = self.0.methods().owner().simulate().await?.value;
         match state {
             State::Initialized(owner) => Ok(owner),
             _ => Err(Error::InvalidData("NotInitialized".to_string())),
@@ -132,7 +136,7 @@ impl GuildPinContract {
     }
 
     pub async fn signer(&self) -> Result<EvmAddress> {
-        let inner = self.0.methods().signer().call().await?.value;
+        let inner = self.0.methods().signer().simulate().await?.value;
         Ok(EvmAddress::from(inner))
     }
 
@@ -150,7 +154,7 @@ impl GuildPinContract {
     }
 
     pub async fn treasury(&self) -> Result<Identity> {
-        Ok(self.0.methods().treasury().call().await?.value)
+        Ok(self.0.methods().treasury().simulate().await?.value)
     }
 
     pub async fn set_fee(&self, caller: &WalletUnlocked, fee: u64) -> Result<FuelCallResponse<()>> {
@@ -163,7 +167,7 @@ impl GuildPinContract {
     }
 
     pub async fn fee(&self) -> Result<u64> {
-        Ok(self.0.methods().fee().call().await?.value)
+        Ok(self.0.methods().fee().simulate().await?.value)
     }
 
     pub async fn claim(
@@ -213,7 +217,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .balance_of(id)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -222,7 +226,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .pin_owner(pin_id)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -231,7 +235,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .total_minted()
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -240,7 +244,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .total_minted_per_guild(guild_id)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -254,7 +258,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .pin_id_by_address(address, guild_id, action)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -268,7 +272,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .pin_id_by_user_id(user_id, guild_id, action)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -277,7 +281,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .metadata(pin_id)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -286,7 +290,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .encoded_metadata(pin_id)
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -295,7 +299,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .total_assets()
-            .call()
+            .simulate()
             .await
             .map(|r| r.value)
     }
@@ -304,7 +308,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .total_supply(self.asset_id())
-            .call()
+            .simulate()
             .await
             .map(|r| r.value.unwrap())
     }
@@ -313,7 +317,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .name(self.asset_id())
-            .call()
+            .simulate()
             .await
             .map(|r| r.value.unwrap())
     }
@@ -322,7 +326,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .symbol(self.asset_id())
-            .call()
+            .simulate()
             .await
             .map(|r| r.value.unwrap())
     }
@@ -331,7 +335,7 @@ impl GuildPinContract {
         self.0
             .methods()
             .decimals(self.asset_id())
-            .call()
+            .simulate()
             .await
             .map(|r| r.value.unwrap())
     }

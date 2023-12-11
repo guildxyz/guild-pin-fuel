@@ -88,7 +88,16 @@ async fn metadata_nonexistent_fails() {
     let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::init(&parameters).await;
 
-    let error = contract.metadata(0).await.unwrap_err();
+    // NOTE since contract.metadata() is a wrapper around simulating the call, it will return with
+    // a "Revert" error, instead of the actual "PinIdDoesNotExist" error. Thus, the contract is
+    // called in this raw form for test's sake.
+    let error = contract
+        .inner()
+        .methods()
+        .metadata(0)
+        .call()
+        .await
+        .unwrap_err();
     check_error(error, "PinIdDoesNotExist");
 
     let alice: Address = parameters.alice.address().into();
@@ -104,6 +113,12 @@ async fn metadata_nonexistent_fails() {
 
     contract.burn(&parameters.alice, 0).await.unwrap();
 
-    let error = contract.metadata(0).await.unwrap_err();
+    let error = contract
+        .inner()
+        .methods()
+        .metadata(0)
+        .call()
+        .await
+        .unwrap_err();
     check_error(error, "PinIdDoesNotExist");
 }

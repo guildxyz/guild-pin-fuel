@@ -1,6 +1,6 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::accounts::fuel_crypto::fuel_types::Salt;
-use fuels::prelude::Address;
+use fuels::prelude::{Address, AssetId};
 use fuels::types::EvmAddress;
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
@@ -22,9 +22,11 @@ async fn main() {
         .build()
         .await;
 
-    println!("OWNER: {}", Address::from(parameters.owner.address()));
-    println!("TREASURY: {}", Address::from(parameters.treasury.address()));
-    println!("SIGNER: 0x{}", hex::encode(parameters.signer.address()));
+    // print local data
+    println!("LOCAL DATA");
+    println!("owner: {}", Address::from(parameters.owner.address()));
+    println!("treasury: {}", Address::from(parameters.treasury.address()));
+    println!("signer: 0x{}", hex::encode(parameters.signer.address()));
 
     let contract = if std::env::var("DEPLOY").is_ok() {
         GuildPinContract::init(&parameters).await
@@ -32,15 +34,21 @@ async fn main() {
         GuildPinContract::new(&parameters)
     };
 
-    println!("CONTRACT ID: {}", contract.contract_id());
+    println!("contract id: {}", contract.contract_id());
 
-    println!("OWNER QUERY: {:?}", contract.owner().await.unwrap());
-    println!("TREASURY QUERY: {:?}", contract.treasury().await.unwrap());
-
-    println!("FEE QUERY: {:?}", contract.fee().await.unwrap());
-
+    // print on-chain queries
+    println!("ON-CHAIN QUERIES");
+    let balance = parameters
+        .provider()
+        .get_asset_balance(parameters.owner.address(), AssetId::BASE)
+        .await
+        .unwrap();
+    println!("balance: {}", balance);
+    println!("owner: {:?}", contract.owner().await.unwrap());
+    println!("treasury: {:?}", contract.treasury().await.unwrap());
+    println!("fee: {:?}", contract.fee().await.unwrap());
     println!(
-        "SIGNER QUERY: 0x{}",
+        "signer: 0x{}",
         hex::encode(&contract.signer().await.unwrap().value().0[12..])
     );
 
@@ -52,12 +60,16 @@ async fn main() {
             .set_signer(&parameters.owner, new_signer)
             .await
             .unwrap();
+        println!(
+            "new signer: 0x{:?}",
+            hex::encode(&contract.signer().await.unwrap().value().0[12..])
+        );
     }
 
     // set fee
     if std::env::var("SET_FEE").is_ok() {
         contract.set_fee(&parameters.owner, 15).await.unwrap();
-        println!("FEE QUERY: {:?}", contract.fee().await.unwrap());
+        println!("new fee: {:?}", contract.fee().await.unwrap());
     }
     let user_id = u64::MAX;
     let guild_id = u64::MAX;
@@ -81,5 +93,12 @@ async fn main() {
     assert_eq!(header, "data:application/json;base64,");
     let decoded_metadata = String::from_utf8(STANDARD.decode(encoded_metadata).unwrap()).unwrap();
     let token_uri: TokenUri = serde_json::from_str(&decoded_metadata).unwrap();
-    println!("TOKEN URI: {:#?}", token_uri);
+    println!("token uri: {:#?}", token_uri);
+
+    let balance = parameters
+        .provider()
+        .get_asset_balance(parameters.owner.address(), AssetId::BASE)
+        .await
+        .unwrap();
+    println!("balance: {}", balance);
 }
