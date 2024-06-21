@@ -1,7 +1,6 @@
 library;
 
-use ownership::Ownership;
-use src_5::{AccessError, State};
+use sway_libs::ownership::{transfer_ownership, only_owner};
 
 use std::vm::evm::evm_address::EvmAddress;
 
@@ -46,22 +45,16 @@ pub struct FeeChanged {
 }
 
 #[storage(read, write)]
-pub fn _set_owner(owner: Identity, owner_key: StorageKey<Ownership>) {
-    let caller = _only_owner(owner_key);
-    owner_key.write(Ownership::initialized(owner));
-    log(OwnerChanged {
-        old: caller,
-        new: owner,
-    });
+pub fn _set_owner(new_owner: Identity) {
+    transfer_ownership(new_owner);
 }
 
 #[storage(read, write)]
 pub fn _set_signer(
     signer: EvmAddress,
     key: StorageKey<b256>,
-    owner_key: StorageKey<Ownership>,
 ) {
-    let _caller = _only_owner(owner_key);
+    only_owner();
     let old_signer = key.read();
     key.write(signer.into());
     log(SignerChanged {
@@ -74,9 +67,8 @@ pub fn _set_signer(
 pub fn _set_treasury(
     treasury: Identity,
     key: StorageKey<Identity>,
-    owner_key: StorageKey<Ownership>,
 ) {
-    let _caller = _only_owner(owner_key);
+    only_owner();
     let old_treasury = key.read();
     key.write(treasury);
     log(TreasuryChanged {
@@ -89,20 +81,14 @@ pub fn _set_treasury(
 pub fn _set_fee(
     fee: u64,
     key: StorageKey<u64>,
-    owner_key: StorageKey<Ownership>,
 ) {
-    let _caller = _only_owner(owner_key);
+    only_owner();
     let old_fee = key.read();
     key.write(fee);
     log(FeeChanged {
         old: old_fee,
         new: fee,
     });
-}
-
-#[storage(read)]
-pub fn _owner(key: StorageKey<Ownership>) -> State {
-    key.read().state
 }
 
 #[storage(read)]
@@ -119,18 +105,4 @@ pub fn _treasury(key: StorageKey<Identity>) -> Identity {
 #[storage(read)]
 pub fn _fee(key: StorageKey<u64>) -> u64 {
     key.read()
-}
-
-// NOTE this implicitly checks whether the contract has been initialized
-#[storage(read)]
-fn _only_owner(key: StorageKey<Ownership>) -> Identity {
-    // NOTE built-in storage.owner.only_owner() doesn't work compiler cannot find the method...
-    //
-    // anyways, at least we can modify this to return the msg_sender() as well
-    let caller = msg_sender().unwrap();
-    require(
-        _owner(key) == State::Initialized(caller),
-        AccessError::NotOwner,
-    );
-    caller
 }

@@ -8,7 +8,7 @@ use std::string::String;
 
 // NOTE this is far from optimal, the only goal was for this
 // to work. If time allows this could be optimized.
-pub fn base64(input: String) -> String {
+pub fn base64(input: String) -> Bytes {
     let input = input.as_bytes();
     let mut result = Bytes::new();
     let mut i = 0;
@@ -29,8 +29,7 @@ pub fn base64(input: String) -> String {
             j += 1;
         }
     }
-
-    String::from(result)
+    result
 }
 
 // NOTE
@@ -55,45 +54,21 @@ fn get_char_for_index(index: u8) -> u8 {
 
 fn split(input: Bytes) -> Bytes {
     let mut output = Bytes::new();
-    match input
-        .len() {
+    match input.len() {
         0 => {},
         1 => {
-            output
-                .push(input.get(0).unwrap() >> 2);
-            output
-                .push((input.get(0).unwrap() & 3) << 4);
+            output.push(input.get(0).unwrap() >> 2);
+            output.push((input.get(0).unwrap() & 3) << 4);
         },
         2 => {
             output.push(input.get(0).unwrap() >> 2);
-            output
-                .push(
-                    (input
-                        .get(0)
-                        .unwrap() & 3) << 4 | input
-                        .get(1)
-                        .unwrap() >> 4,
-                );
+            output.push((input.get(0).unwrap() & 3) << 4 | input.get(1).unwrap() >> 4);
             output.push((input.get(1).unwrap() & 15) << 2);
         },
         3 => {
             output.push(input.get(0).unwrap() >> 2);
-            output
-                .push(
-                    (input
-                        .get(0)
-                        .unwrap() & 3) << 4 | input
-                        .get(1)
-                        .unwrap() >> 4,
-                );
-            output
-                .push(
-                    (input
-                        .get(1)
-                        .unwrap() & 15) << 2 | input
-                        .get(2)
-                        .unwrap() >> 6,
-                );
+            output.push((input.get(0).unwrap() & 3) << 4 | input.get(1).unwrap() >> 4);
+            output.push((input.get(1).unwrap() & 15) << 2 | input.get(2).unwrap() >> 6);
             output.push(input.get(2).unwrap() & 63);
         },
         _ => revert(0),
@@ -116,19 +91,11 @@ fn encode_chunk(input: Bytes) -> Bytes {
 
 #[test]
 fn base64_encoding() {
-    assert(
-        base64(String::from_ascii_str("a")) == String::from_ascii_str("YQ=="),
-    );
-    assert(
-        base64(String::from_ascii_str("ab")) == String::from_ascii_str("YWI="),
-    );
-    assert(
-        base64(String::from_ascii_str("abc")) == String::from_ascii_str("YWJj"),
-    );
-    assert(
-        base64(String::from_ascii_str("hello")) == String::from_ascii_str("aGVsbG8="),
-    );
-    assert(
-        base64(String::from_ascii_str("hello-world")) == String::from_ascii_str("aGVsbG8td29ybGQ="),
+    assert_eq(String::from(base64(String::from_ascii_str("a"))), String::from_ascii_str("YQ=="));
+    assert_eq(String::from(base64(String::from_ascii_str("ab"))), String::from_ascii_str("YWI="));
+    assert_eq(String::from(base64(String::from_ascii_str("abc"))), String::from_ascii_str("YWJj"));
+    assert_eq(String::from(base64(String::from_ascii_str("hello"))), String::from_ascii_str("aGVsbG8="));
+    assert_eq(
+        String::from(base64(String::from_ascii_str("hello-world"))), String::from_ascii_str("aGVsbG8td29ybGQ="),
     );
 }

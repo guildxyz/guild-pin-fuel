@@ -1,36 +1,30 @@
 [[package]]
 name = "core"
-source = "path+from-root-AC247AEA3D39B916"
+source = "path+from-root-E19CE48B3E858B72"
 
 [[package]]
 name = "guild-pin-contract"
 source = "member"
 dependencies = [
-    "ownership",
-    "src_20",
-    "src_5",
+    "standards",
     "std",
+    "sway_libs",
 ]
 
 [[package]]
-name = "ownership"
-source = "git+https://github.com/FuelLabs/sway-libs?rev#a58566009a364768640826fd78f0b84fe29b92cf"
-dependencies = [
-    "src_5",
-    "std",
-]
-
-[[package]]
-name = "src_20"
-source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d"
-dependencies = ["std"]
-
-[[package]]
-name = "src_5"
-source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.2.0#29cb3a4ad318d847b17936c245b525c1bee3382d"
+name = "standards"
+source = "git+https://github.com/FuelLabs/sway-standards?tag=v0.5.0#348f7175df4c012b23c86cdb18aab79025ca1f18"
 dependencies = ["std"]
 
 [[package]]
 name = "std"
-source = "git+https://github.com/fuellabs/sway?tag=v0.47.0#34265301c6037d51444899a99df1cfc563df6016"
+source = "git+https://github.com/fuellabs/sway?tag=v0.60.0#2f0392ee35a1e4dd80bd8034962d5b4083dfb8b6"
 dependencies = ["core"]
+
+[[package]]
+name = "sway_libs"
+source = "git+https://github.com/FuelLabs/sway-libs?tag=v0.22.0#172adbbcc36e561a56c5820209445f86f0856bfc"
+dependencies = [
+    "standards",
+    "std",
+]

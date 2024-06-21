@@ -3,15 +3,17 @@ library;
 use ::common::action::GuildAction;
 use ::common::claim::ClaimParameters;
 use ::common::pin::PinData;
+use ::common::contract_id;
 use ::interfaces::init::{_initialized, InitKeys};
 
 use std::b512::B512;
+use std::asset::{burn, mint, transfer};
+use std::asset_id::AssetId;
 use std::block::timestamp as now;
-use std::call_frames::{contract_id, msg_asset_id};
-use std::constants::{BASE_ASSET_ID, ZERO_B256};
+use std::call_frames::msg_asset_id;
+use std::constants::ZERO_B256;
 use std::context::msg_amount;
 use std::hash::Hash;
-use std::token::{burn, mint, transfer};
 use std::vm::evm::ecr::ec_recover_evm_address;
 use std::vm::evm::evm_address::EvmAddress;
 
@@ -84,38 +86,38 @@ pub fn _claim(
 ) {
     // NOTE anyone call this function if they have the params with a valid signature
     // check if the contract is initialized
-    _initialized(init_keys.owner);
+    _initialized();
     // perform checks
     let mint_date = _check_signature(params, signature, signature_validity_period, init_keys);
     require(
         !(_pin_id_by_address(
-            params
-                .recipient,
-            params
-                .guild_id,
-            params
-                .action,
-            token_keys
-                .token_id_by_address,
-        )
-            .is_some() || _pin_id_by_user_id(
-            params
-                .user_id,
-            params
-                .guild_id,
-            params
-                .action,
-            token_keys
-                .token_id_by_user_id,
-        )
-            .is_some()),
+                params
+                    .recipient,
+                params
+                    .guild_id,
+                params
+                    .action,
+                token_keys
+                    .token_id_by_address,
+            )
+                .is_some() || _pin_id_by_user_id(
+                params
+                    .user_id,
+                params
+                    .guild_id,
+                params
+                    .action,
+                token_keys
+                    .token_id_by_user_id,
+            )
+                .is_some()),
         TokenError::AlreadyClaimed,
     );
 
     // collect fees
     let fee = init_keys.fee.read();
     let asset_id = msg_asset_id();
-    require(asset_id == BASE_ASSET_ID, TokenError::InvalidAssetId);
+    require(asset_id == AssetId::base(), TokenError::InvalidAssetId);
     require(
         msg_amount() >= params
             .admin_fee + fee,

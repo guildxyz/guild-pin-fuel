@@ -5,7 +5,7 @@ authors = ["PopcornPaws"]
 edition = "2021"
 
 [dependencies]
-fuels = "0.50"
+fuels = "0.63"
 sha3 = "0.10"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
@@ -14,6 +14,7 @@ signrs = { git = "https://github.com/agoraxyz/signrs", features = ["eth"] }
 [dev-dependencies]
 base64 = "0.21"
 hex = "0.4"
+structopt = "0.3"
 tokio = { version = "1", default-features = false, features = ["rt", "macros"] }
 
 [lib]

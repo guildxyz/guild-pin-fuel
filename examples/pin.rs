@@ -6,19 +6,54 @@ use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
 use guild_pin_contract::parameters::ParametersBuilder;
 use guild_pin_contract::utils::{bytes_to_b256, ClaimBuilder};
+use structopt::StructOpt;
 
-const TESTNET_URL: &str = "https://beta-4.fuel.network/";
+use std::path::PathBuf;
 
-const BACKEND_SIGNER: &str = "0x989a6C5D84c932E7c9EaE8b4D2d5f378b11C21F7";
+#[derive(StructOpt, Debug)]
+struct Pin {
+    #[structopt(default_value = "https://beta-5.fuel.network/")]
+    url: String,
+    #[structopt(default_value = "../wallets/fuel-signer-seed")]
+    signer: PathBuf,
+    #[structopt(default_value = "../wallets/fuel-tn-deployer-sk")]
+    deployer: PathBuf,
+    #[structopt(default_value = "../wallets/fuel-tn-treasury-sk")]
+    treasury: PathBuf,
+    #[structopt(default_value = "1")]
+    version: u8,
+    #[structopt(subcommand)]
+    contract: Option<Contract>,
+}
+
+#[derive(StructOpt, Debug)]
+enum Contract {
+    Deploy,
+    SetSigner {
+        // default is the guild backend signer address
+        #[structopt(default_value = "0x989a6C5D84c932E7c9EaE8b4D2d5f378b11C21F7")]
+        signer: String,
+    },
+    SetFee {
+        #[structopt(default_value = "15")]
+        fee: u32,
+    },
+    TestClaim,
+}
+
 
 #[tokio::main]
 async fn main() {
+    let pin = Pin::from_args();
+
+    println!("pin: {:#?}", pin);
+
     let parameters = ParametersBuilder::new()
-        .signer_file("../wallets/fuel-signer-seed")
-        .owner_file("../wallets/fuel-tn-deployer-sk")
-        .treasury_file("../wallets/fuel-tn-treasury-sk")
-        .url(TESTNET_URL)
-        .salt(Salt::new([1u8; 32]))
+        .signer_file(pin.signer)
+        .owner_file(pin.deployer)
+        .treasury_file(pin.treasury)
+        .url(&pin.url)
+        .salt(Salt::new([pin.version; 32]))
         .build()
         .await;
 
@@ -28,6 +63,7 @@ async fn main() {
     println!("treasury: {}", Address::from(parameters.treasury.address()));
     println!("signer: 0x{}", hex::encode(parameters.signer.address()));
 
+    /*
     let contract = if std::env::var("DEPLOY").is_ok() {
         GuildPinContract::init(&parameters).await
     } else {
@@ -101,4 +137,5 @@ async fn main() {
         .await
         .unwrap();
     println!("balance: {}", balance);
+    */
 }

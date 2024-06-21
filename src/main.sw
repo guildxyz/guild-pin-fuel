@@ -4,18 +4,19 @@ mod common;
 mod interfaces;
 
 use ::common::action::GuildAction;
+/*
 use ::common::claim::ClaimParameters;
-use ::common::pin::PinData;
+*/use ::common::pin::PinData;
 use ::common::*;
 use ::interfaces::init::*;
+/*
 use ::interfaces::metadata::*;
 use ::interfaces::owner::*;
 use ::interfaces::src20::*;
 use ::interfaces::token::*;
-
-use ownership::Ownership;
-use src_20::SRC20;
-use src_5::{SRC5, State};
+*/use sway_libs::ownership::*;
+use standards::src20::SRC20;
+use standards::src5::{SRC5, State};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
@@ -34,14 +35,12 @@ configurable {
 }
 
 storage {
-    /// The contract owner
-    owner: Ownership = Ownership::uninitialized(),
     /// Evm address of the guild-backend signer wallet
     signer: b256 = ZERO_B256,
     /// Treasury address receiving minting fees
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
     /// Fee collected upon claiming a pin
-    fee: u64 = FEE,
+    fee: u64 = 0,
     /// Map: pin_id -> metadata
     metadata: StorageMap<u64, PinData> = StorageMap {},
     /// Map: address -> pin_balance (increment upon claim, decrement upon burn)
@@ -58,8 +57,8 @@ storage {
     total_minted: u64 = 0,
     /// Incremented upon successful claim, decremented upon successful burn
     total_supply: u64 = 0,
-    /// Dummy key to make warnings disappear
-    warning: bool = false,
+    ///// Dummy key to make warnings disappear
+    //warning: bool = false,
 }
 
 impl Initialize for Contract {
@@ -72,7 +71,6 @@ impl Initialize for Contract {
             fee: FEE,
         };
         let keys = InitKeys {
-            owner: storage.owner,
             signer: storage.signer,
             treasury: storage.treasury,
             fee: storage.fee,
@@ -81,6 +79,7 @@ impl Initialize for Contract {
     }
 }
 
+/*
 impl OnlyOwner for Contract {
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
@@ -243,3 +242,4 @@ impl PinMetadata for Contract {
         _encoded_metadata(pin_id, storage.metadata)
     }
 }
+*/
