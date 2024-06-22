@@ -1,10 +1,12 @@
 use crate::parameters::Parameters;
 
+use fuels::core::codec::EncoderConfig;
 use fuels::prelude::*;
 use fuels::programs::call_response::FuelCallResponse;
 use fuels::programs::call_utils::TxDependencyExtension;
 use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
+use fuels::types::transaction::TxPolicies;
 use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
 #[cfg(debug_assertions)]
@@ -38,13 +40,17 @@ impl GuildPinContract {
 
     fn load(parameters: &Parameters) -> Contract {
         // initialize configurables
-        let configurables = GuildPinConfigurables::new()
+        let configurables = GuildPinConfigurables::new(EncoderConfig::default())
             .with_OWNER(Identity::Address(Address::from(parameters.owner.address())))
+            .expect("invalid owner")
             .with_TREASURY(Identity::Address(Address::from(
                 parameters.treasury.address(),
             )))
+            .expect("invalid treasury")
             .with_SIGNER(parameters.signer_b256())
-            .with_FEE(parameters.fee);
+            .expect("invalid signer")
+            .with_FEE(parameters.fee)
+            .expect("invalid fee");
         // load storage configuration
         let storage_configuration = StorageConfiguration::default()
             .add_slot_overrides_from_file(CONTRACT_STORAGE_PATH)
@@ -67,7 +73,7 @@ impl GuildPinContract {
     pub async fn deploy(parameters: &Parameters) -> Self {
         let contract = Self::load(parameters);
         let contract_id = contract
-            .deploy(&parameters.owner, TxParameters::default())
+            .deploy(&parameters.owner, TxPolicies::default())
             .await
             .unwrap();
 
@@ -94,7 +100,8 @@ impl GuildPinContract {
 
     pub async fn initialize(&self, caller: &WalletUnlocked) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .initialize()
             .call()
@@ -107,7 +114,8 @@ impl GuildPinContract {
         owner: Identity,
     ) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .set_owner(owner)
             .call()
@@ -118,7 +126,7 @@ impl GuildPinContract {
         let state = self.0.methods().owner().simulate().await?.value;
         match state {
             State::Initialized(owner) => Ok(owner),
-            _ => Err(Error::InvalidData("NotInitialized".to_string())),
+            _ => Err(Error::IO("NotInitialized".to_string())),
         }
     }
 
@@ -128,7 +136,8 @@ impl GuildPinContract {
         signer: EvmAddress,
     ) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .set_signer(signer)
             .call()
@@ -146,7 +155,8 @@ impl GuildPinContract {
         treasury: Identity,
     ) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .set_treasury(treasury)
             .call()
@@ -159,7 +169,8 @@ impl GuildPinContract {
 
     pub async fn set_fee(&self, caller: &WalletUnlocked, fee: u64) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .set_fee(fee)
             .call()
@@ -191,7 +202,8 @@ impl GuildPinContract {
         asset_id: AssetId,
     ) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .claim(params, signature)
             .append_variable_outputs(2) // needed for sending tokens to optionally 2 treasuries
@@ -206,7 +218,8 @@ impl GuildPinContract {
 
     pub async fn burn(&self, caller: &WalletUnlocked, pin_id: u64) -> Result<FuelCallResponse<()>> {
         self.0
-            .with_account(caller.clone())?
+            .clone()
+            .with_account(caller.clone())
             .methods()
             .burn(pin_id)
             .call()
@@ -295,13 +308,20 @@ impl GuildPinContract {
             .map(|r| r.value)
     }
 
-    pub async fn metadata(&self, asset_id: AssetId, pin_id: String) -> Result<Option<String>> {
-        self.0
+    pub async fn metadata(&self, asset_id: AssetId, pin_id: String) -> Result<String> {
+        let maybe_metadata = self
+            .0
             .methods()
             .metadata(asset_id, pin_id)
             .simulate()
             .await
-            .map(|r| r.value)
+            .map(|r| r.value)?;
+
+        if let Some(Metadata::String(metadata)) = maybe_metadata {
+            Ok(metadata)
+        } else {
+            Err(Error::Other("invalid metadata".to_string()))
+        }
     }
 
     pub async fn total_assets(&self) -> Result<u64> {

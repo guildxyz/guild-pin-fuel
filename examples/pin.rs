@@ -1,6 +1,5 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
-use fuels::accounts::fuel_crypto::fuel_types::Salt;
-use fuels::prelude::{Address, AssetId};
+use fuels::prelude::{Address, AssetId, Salt};
 use fuels::types::EvmAddress;
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
@@ -40,7 +39,6 @@ enum Contract {
     },
     TestClaim,
 }
-
 
 #[tokio::main]
 async fn main() {

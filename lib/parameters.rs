@@ -1,10 +1,9 @@
 use crate::contract::ClaimParameters;
 use crate::utils::{bytes_to_b256, hash_params};
-use fuels::accounts::fuel_crypto::fuel_types::Salt;
-use fuels::accounts::fuel_crypto::SecretKey;
 use fuels::accounts::provider::Provider;
+use fuels::crypto::SecretKey;
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
-use fuels::types::{Bits256, EvmAddress, Identity, B512};
+use fuels::types::{Bits256, EvmAddress, Identity, Salt, B512};
 use signrs::eth::EthSigner;
 
 use std::path::Path;
