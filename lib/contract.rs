@@ -277,10 +277,10 @@ impl GuildPinContract {
             .map(|r| r.value)
     }
 
-    pub async fn metadata(&self, pin_id: u64) -> Result<String> {
+    pub async fn pin_metadata(&self, pin_id: u64) -> Result<String> {
         self.0
             .methods()
-            .metadata(pin_id)
+            .pin_metadata(pin_id)
             .simulate()
             .await
             .map(|r| r.value)
@@ -290,6 +290,15 @@ impl GuildPinContract {
         self.0
             .methods()
             .encoded_metadata(pin_id)
+            .simulate()
+            .await
+            .map(|r| r.value)
+    }
+
+    pub async fn metadata(&self, asset_id: AssetId, pin_id: String) -> Result<Option<String>> {
+        self.0
+            .methods()
+            .metadata(asset_id, pin_id)
             .simulate()
             .await
             .map(|r| r.value)

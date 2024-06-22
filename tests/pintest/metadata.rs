@@ -32,7 +32,7 @@ async fn metadata_ok() {
     let encoded_metadata = header.split_off(29);
     assert_eq!(header, "data:application/json;base64,");
     let decoded_metadata = String::from_utf8(STANDARD.decode(encoded_metadata).unwrap()).unwrap();
-    let metadata = contract.metadata(0).await.unwrap();
+    let metadata = contract.pin_metadata(0).await.unwrap();
     println!("{}", metadata);
     assert_eq!(metadata, decoded_metadata);
     let token_uri: TokenUri = serde_json::from_str(&metadata).unwrap();
@@ -94,7 +94,7 @@ async fn metadata_nonexistent_fails() {
     let error = contract
         .inner()
         .methods()
-        .metadata(0)
+        .pin_metadata(0)
         .call()
         .await
         .unwrap_err();
@@ -109,14 +109,14 @@ async fn metadata_nonexistent_fails() {
         .await
         .unwrap();
 
-    contract.metadata(0).await.unwrap();
+    contract.pin_metadata(0).await.unwrap();
 
     contract.burn(&parameters.alice, 0).await.unwrap();
 
     let error = contract
         .inner()
         .methods()
-        .metadata(0)
+        .pin_metadata(0)
         .call()
         .await
         .unwrap_err();
