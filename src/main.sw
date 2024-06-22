@@ -6,6 +6,7 @@ mod interfaces;
 use ::common::action::GuildAction;
 use ::common::claim::ClaimParameters;
 use ::common::pin::PinData;
+use ::common::utils::parse_u64;
 use ::common::*;
 use ::interfaces::init::*;
 use ::interfaces::metadata::*;
@@ -15,6 +16,7 @@ use ::interfaces::token::*;
 use sway_libs::ownership::*;
 use standards::src20::SRC20;
 use standards::src5::{SRC5, State};
+use standards::src7::{Metadata, SRC7};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
@@ -224,12 +226,25 @@ impl SRC20 for Contract {
     }
 }
 
-// NOTE SRC-7 throws runtime errors saying
-// InvalidType("Enums currently support only one level deep heap types.
-// Thus, I'm omitting the SRC-7 impl for metadata retrieval
+impl SRC7 for Contract {
+    #[storage(read)]
+    fn metadata(asset_id: AssetId, key: String) -> Option<Metadata> {
+        if asset_id != AssetId::default() {
+            None
+        } else {
+            // damn there's no `map` on Option<T>
+            if let Some(pin_id) = parse_u64(key) {
+                Some(Metadata::String(_metadata(pin_id, storage.metadata)))
+            } else {
+                None
+            }
+        }
+    }
+}
+
 impl PinMetadata for Contract {
     #[storage(read)]
-    fn metadata(pin_id: u64) -> String {
+    fn pin_metadata(pin_id: u64) -> String {
         _metadata(pin_id, storage.metadata)
     }
 

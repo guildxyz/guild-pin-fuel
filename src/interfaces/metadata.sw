@@ -11,7 +11,7 @@ use std::string::String;
 
 abi PinMetadata {
     #[storage(read)]
-    fn metadata(pin_id: u64) -> String;
+    fn pin_metadata(pin_id: u64) -> String;
     #[storage(read)]
     fn encoded_metadata(pin_id: u64) -> String;
 }
