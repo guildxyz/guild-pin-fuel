@@ -62,18 +62,49 @@ pub fn unpad(s: str) -> Bytes {
 
 #[test]
 fn convert_to_string() {
-    assert_eq(String::from(u64_to_ascii_bytes(0)), String::from_ascii_str("0"));
-    assert_eq(String::from(u64_to_ascii_bytes(1)), String::from_ascii_str("1"));
-    assert_eq(String::from(u64_to_ascii_bytes(2)), String::from_ascii_str("2"));
-    assert_eq(String::from(u64_to_ascii_bytes(3)), String::from_ascii_str("3"));
-    assert_eq(String::from(u64_to_ascii_bytes(10)), String::from_ascii_str("10"));
-    assert_eq(String::from(u64_to_ascii_bytes(11)), String::from_ascii_str("11"));
-    assert_eq(String::from(u64_to_ascii_bytes(12)), String::from_ascii_str("12"));
-    assert_eq(String::from(u64_to_ascii_bytes(13)), String::from_ascii_str("13"));
-    assert_eq(String::from(u64_to_ascii_bytes(100)), String::from_ascii_str("100"));
-    assert_eq(String::from(u64_to_ascii_bytes(11111)), String::from_ascii_str("11111"));
     assert_eq(
-        String::from(u64_to_ascii_bytes(9876543210)), String::from_ascii_str("9876543210"),
+        String::from(u64_to_ascii_bytes(0)),
+        String::from_ascii_str("0"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(1)),
+        String::from_ascii_str("1"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(2)),
+        String::from_ascii_str("2"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(3)),
+        String::from_ascii_str("3"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(10)),
+        String::from_ascii_str("10"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(11)),
+        String::from_ascii_str("11"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(12)),
+        String::from_ascii_str("12"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(13)),
+        String::from_ascii_str("13"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(100)),
+        String::from_ascii_str("100"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(11111)),
+        String::from_ascii_str("11111"),
+    );
+    assert_eq(
+        String::from(u64_to_ascii_bytes(9876543210)),
+        String::from_ascii_str("9876543210"),
     );
 }
 
@@ -82,5 +113,8 @@ fn unpad_string() {
     assert_eq(String::from(unpad("abc")), String::from_ascii_str("abc"));
     assert_eq(String::from(unpad(" ")), String::from_ascii_str(""));
     assert_eq(String::from(unpad("    ")), String::from_ascii_str(""));
-    assert_eq(String::from(unpad("hello       ")), String::from_ascii_str("hello"));
+    assert_eq(
+        String::from(unpad("hello       ")),
+        String::from_ascii_str("hello"),
+    );
 }

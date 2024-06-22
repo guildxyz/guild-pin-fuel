@@ -1,7 +1,7 @@
 library;
 
 use ::common::action::GuildAction;
-use ::common::utils::{str_to_bytes, push_str, u64_to_ascii_bytes, unpad};
+use ::common::utils::{push_str, str_to_bytes, u64_to_ascii_bytes, unpad};
 
 use std::assert::assert_eq;
 use std::bytes::Bytes;
@@ -114,7 +114,6 @@ impl PinData {
         String::from(bytes)
     }
 }
-
 
 fn type_json(ty: str, ref mut bytes: Bytes) {
     bytes.push(Q);

@@ -4,17 +4,15 @@ mod common;
 mod interfaces;
 
 use ::common::action::GuildAction;
-/*
 use ::common::claim::ClaimParameters;
-*/use ::common::pin::PinData;
+use ::common::pin::PinData;
 use ::common::*;
 use ::interfaces::init::*;
-/*
 use ::interfaces::metadata::*;
 use ::interfaces::owner::*;
 use ::interfaces::src20::*;
 use ::interfaces::token::*;
-*/use sway_libs::ownership::*;
+use sway_libs::ownership::*;
 use standards::src20::SRC20;
 use standards::src5::{SRC5, State};
 
@@ -57,8 +55,8 @@ storage {
     total_minted: u64 = 0,
     /// Incremented upon successful claim, decremented upon successful burn
     total_supply: u64 = 0,
-    ///// Dummy key to make warnings disappear
-    //warning: bool = false,
+    /// Dummy key to make warnings disappear
+    warning: bool = false,
 }
 
 impl Initialize for Contract {
@@ -79,23 +77,22 @@ impl Initialize for Contract {
     }
 }
 
-/*
 impl OnlyOwner for Contract {
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
-        _set_owner(owner, storage.owner)
+        _set_owner(owner)
     }
     #[storage(read, write)]
     fn set_signer(signer: EvmAddress) {
-        _set_signer(signer, storage.signer, storage.owner)
+        _set_signer(signer, storage.signer)
     }
     #[storage(read, write)]
     fn set_treasury(treasury: Identity) {
-        _set_treasury(treasury, storage.treasury, storage.owner)
+        _set_treasury(treasury, storage.treasury)
     }
     #[storage(read, write)]
     fn set_fee(fee: u64) {
-        _set_fee(fee, storage.fee, storage.owner)
+        _set_fee(fee, storage.fee)
     }
 }
 
@@ -130,7 +127,6 @@ impl PinToken for Contract {
         };
 
         let init_keys = InitKeys {
-            owner: storage.owner,
             signer: storage.signer,
             treasury: storage.treasury,
             fee: storage.fee,
@@ -193,7 +189,7 @@ impl PinInfo for Contract {
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        _owner(storage.owner)
+        _owner() // from src5
     }
 }
 
@@ -242,4 +238,3 @@ impl PinMetadata for Contract {
         _encoded_metadata(pin_id, storage.metadata)
     }
 }
-*/

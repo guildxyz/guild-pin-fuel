@@ -31,26 +31,26 @@ pub enum TokenError {
 }
 
 pub struct PinMinted {
-    recipient: Address,
-    pin_id: u64,
+    pub recipient: Address,
+    pub pin_id: u64,
 }
 
 pub struct PinBurned {
-    pin_owner: Address,
-    pin_id: u64,
+    pub pin_owner: Address,
+    pub pin_id: u64,
 }
 
 // NOTE can't use type aliases here either because the compiler can't find the respective methods
 // for type aliases
 pub struct TokenKeys {
-    metadata: StorageKey<StorageMap<u64, PinData>>,
-    balances: StorageKey<StorageMap<Address, u64>>,
-    pin_owners: StorageKey<StorageMap<u64, Option<Address>>>,
-    token_id_by_address: StorageKey<StorageMap<Address, StorageMap<u64, StorageMap<GuildAction, u64>>>>,
-    token_id_by_user_id: StorageKey<StorageMap<u64, StorageKey<StorageMap<u64, StorageMap<GuildAction, u64>>>>>,
-    total_minted_per_guild: StorageKey<StorageMap<u64, u64>>,
-    total_minted: StorageKey<u64>,
-    total_supply: StorageKey<u64>,
+    pub metadata: StorageKey<StorageMap<u64, PinData>>,
+    pub balances: StorageKey<StorageMap<Address, u64>>,
+    pub pin_owners: StorageKey<StorageMap<u64, Option<Address>>>,
+    pub token_id_by_address: StorageKey<StorageMap<Address, StorageMap<u64, StorageMap<GuildAction, u64>>>>,
+    pub token_id_by_user_id: StorageKey<StorageMap<u64, StorageKey<StorageMap<u64, StorageMap<GuildAction, u64>>>>>,
+    pub total_minted_per_guild: StorageKey<StorageMap<u64, u64>>,
+    pub total_minted: StorageKey<u64>,
+    pub total_supply: StorageKey<u64>,
 }
 
 abi PinToken {

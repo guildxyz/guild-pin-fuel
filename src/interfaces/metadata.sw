@@ -30,7 +30,7 @@ pub fn _metadata(pin_id: u64, key: StorageKey<StorageMap<u64, PinData>>) -> Stri
 pub fn _encoded_metadata(pin_id: u64, key: StorageKey<StorageMap<u64, PinData>>) -> String {
     let mut bytes = str_to_bytes("data:application/json;base64,");
     let json_metadata = _metadata(pin_id, key);
-    base64(json_metadata).hash(hasher);
+    bytes.append(base64(json_metadata));
 
-    String::from(hasher.bytes)
+    String::from(bytes)
 }

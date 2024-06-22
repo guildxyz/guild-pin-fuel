@@ -15,9 +15,13 @@ pub fn base64(input: String) -> Bytes {
     while i < input.len() {
         let mut chunk = Bytes::new();
         let mut j = 0;
-        while j < 3 && (i + j) < input.len() {
-            chunk.push(input.get(i + j).unwrap());
-            j += 1;
+        while j < 3 { // had to split up this while loop due to compiler error
+            if (i + j) < input.len() {
+                chunk.push(input.get(i + j).unwrap());
+                j += 1;
+            } else {
+                break
+            }
         }
         i += 3;
 
@@ -91,11 +95,24 @@ fn encode_chunk(input: Bytes) -> Bytes {
 
 #[test]
 fn base64_encoding() {
-    assert_eq(String::from(base64(String::from_ascii_str("a"))), String::from_ascii_str("YQ=="));
-    assert_eq(String::from(base64(String::from_ascii_str("ab"))), String::from_ascii_str("YWI="));
-    assert_eq(String::from(base64(String::from_ascii_str("abc"))), String::from_ascii_str("YWJj"));
-    assert_eq(String::from(base64(String::from_ascii_str("hello"))), String::from_ascii_str("aGVsbG8="));
     assert_eq(
-        String::from(base64(String::from_ascii_str("hello-world"))), String::from_ascii_str("aGVsbG8td29ybGQ="),
+        String::from(base64(String::from_ascii_str("a"))),
+        String::from_ascii_str("YQ=="),
+    );
+    assert_eq(
+        String::from(base64(String::from_ascii_str("ab"))),
+        String::from_ascii_str("YWI="),
+    );
+    assert_eq(
+        String::from(base64(String::from_ascii_str("abc"))),
+        String::from_ascii_str("YWJj"),
+    );
+    assert_eq(
+        String::from(base64(String::from_ascii_str("hello"))),
+        String::from_ascii_str("aGVsbG8="),
+    );
+    assert_eq(
+        String::from(base64(String::from_ascii_str("hello-world"))),
+        String::from_ascii_str("aGVsbG8td29ybGQ="),
     );
 }

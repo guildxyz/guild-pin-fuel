@@ -1,6 +1,6 @@
 library;
 
-use sway_libs::ownership::{transfer_ownership, only_owner};
+use sway_libs::ownership::{only_owner, transfer_ownership};
 
 use std::vm::evm::evm_address::EvmAddress;
 
@@ -50,10 +50,7 @@ pub fn _set_owner(new_owner: Identity) {
 }
 
 #[storage(read, write)]
-pub fn _set_signer(
-    signer: EvmAddress,
-    key: StorageKey<b256>,
-) {
+pub fn _set_signer(signer: EvmAddress, key: StorageKey<b256>) {
     only_owner();
     let old_signer = key.read();
     key.write(signer.into());
@@ -64,10 +61,7 @@ pub fn _set_signer(
 }
 
 #[storage(read, write)]
-pub fn _set_treasury(
-    treasury: Identity,
-    key: StorageKey<Identity>,
-) {
+pub fn _set_treasury(treasury: Identity, key: StorageKey<Identity>) {
     only_owner();
     let old_treasury = key.read();
     key.write(treasury);
@@ -78,10 +72,7 @@ pub fn _set_treasury(
 }
 
 #[storage(read, write)]
-pub fn _set_fee(
-    fee: u64,
-    key: StorageKey<u64>,
-) {
+pub fn _set_fee(fee: u64, key: StorageKey<u64>) {
     only_owner();
     let old_fee = key.read();
     key.write(fee);
