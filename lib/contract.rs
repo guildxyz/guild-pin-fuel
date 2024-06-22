@@ -7,6 +7,7 @@ use fuels::programs::call_utils::TxDependencyExtension;
 use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
 use fuels::types::transaction::TxPolicies;
+use fuels::types::transaction_builders::VariableOutputPolicy;
 use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
 #[cfg(debug_assertions)]
@@ -206,7 +207,7 @@ impl GuildPinContract {
             .with_account(caller.clone())
             .methods()
             .claim(params, signature)
-            .append_variable_outputs(2) // needed for sending tokens to optionally 2 treasuries
+            .with_variable_output_policy(VariableOutputPolicy::Exactly(2)) // needed for sending tokens to optionally 2 treasuries
             .call_params(
                 CallParameters::default()
                     .with_asset_id(asset_id)
