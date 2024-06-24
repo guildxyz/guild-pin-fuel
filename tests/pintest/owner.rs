@@ -8,7 +8,7 @@ async fn set_owner_success() {
     let contract = GuildPinContract::deploy(&parameters).await;
 
     let error = contract.owner().await.unwrap_err();
-    assert_eq!(error.to_string(), "Invalid data: NotInitialized");
+    assert_eq!(error.to_string(), "io: NotInitialized");
 
     contract.initialize(&parameters.bob).await.unwrap();
     let owner = contract.owner().await.unwrap();

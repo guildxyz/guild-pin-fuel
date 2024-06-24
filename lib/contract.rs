@@ -3,7 +3,6 @@ use crate::parameters::Parameters;
 use fuels::core::codec::EncoderConfig;
 use fuels::prelude::*;
 use fuels::programs::call_response::FuelCallResponse;
-use fuels::programs::call_utils::TxDependencyExtension;
 use fuels::programs::contract::CallParameters;
 use fuels::types::errors::Error;
 use fuels::types::transaction::TxPolicies;
