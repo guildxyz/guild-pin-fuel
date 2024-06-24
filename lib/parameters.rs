@@ -58,14 +58,14 @@ impl ParametersBuilder {
 
     pub fn owner_file(mut self, path: impl AsRef<Path>) -> Self {
         let secret_key_string = std::fs::read_to_string(path).unwrap();
-        let secret_key = SecretKey::from_str(&secret_key_string).unwrap();
+        let secret_key = SecretKey::from_str(secret_key_string.trim_end_matches('\n')).unwrap();
         self.owner_sk = Some(secret_key);
         self
     }
 
     pub fn treasury_file(mut self, path: impl AsRef<Path>) -> Self {
         let secret_key_string = std::fs::read_to_string(path).unwrap();
-        let secret_key = SecretKey::from_str(&secret_key_string).unwrap();
+        let secret_key = SecretKey::from_str(secret_key_string.trim_end_matches('\n')).unwrap();
         self.treasury_sk = Some(secret_key);
         self
     }
