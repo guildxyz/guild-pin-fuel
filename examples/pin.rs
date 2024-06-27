@@ -49,6 +49,10 @@ enum Contract {
         #[structopt(default_value = "owner")]
         action: String,
     },
+    Metadata {
+        #[structopt(short = "p", long)]
+        pin_id: Option<u64>,
+    },
 }
 
 #[tokio::main]
@@ -89,7 +93,14 @@ async fn main() {
             action,
         }) => {
             test_claim(&parameters, &contract, user_id, guild_id, action).await;
-            check_last_metadata(&contract).await;
+            read_last_metadata(&contract).await;
+        }
+        Some(Contract::Metadata { pin_id }) => {
+            if let Some(id) = pin_id {
+                read_metadata(&contract, id).await;
+            } else {
+                read_last_metadata(&contract).await;
+            }
         }
         _ => {}
     }
@@ -125,7 +136,7 @@ async fn query_storage(contract: &GuildPinContract) {
     println!("ON-CHAIN QUERIES");
     println!("owner:    {:?}", contract.owner().await.unwrap());
     println!("treasury: {:?}", contract.treasury().await.unwrap());
-    println!("fee:      {:?}", contract.fee().await.unwrap());
+    println!("fee:      {}", contract.fee().await.unwrap());
     println!("signer:   0x{}", signer_in_storage(contract).await);
 }
 
@@ -171,7 +182,7 @@ async fn test_claim(
         .unwrap();
 }
 
-async fn check_metadata(contract: &GuildPinContract, pin_id: u64) {
+async fn read_metadata(contract: &GuildPinContract, pin_id: u64) {
     let mut header = contract.encoded_metadata(pin_id).await.unwrap();
     let encoded_metadata = header.split_off(29);
     assert_eq!(header, "data:application/json;base64,");
@@ -180,7 +191,7 @@ async fn check_metadata(contract: &GuildPinContract, pin_id: u64) {
     println!("token uri: {:#?}", token_uri);
 }
 
-async fn check_last_metadata(contract: &GuildPinContract) {
+async fn read_last_metadata(contract: &GuildPinContract) {
     let last_pin_id = contract.total_minted().await.unwrap().saturating_sub(1);
-    check_metadata(contract, last_pin_id).await;
+    read_metadata(contract, last_pin_id).await;
 }
