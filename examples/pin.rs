@@ -1,6 +1,6 @@
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::accounts::provider::Provider;
-use fuels::prelude::{AssetId, Salt};
+use fuels::prelude::Salt;
 use fuels::types::bech32::Bech32Address;
 use fuels::types::EvmAddress;
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
@@ -8,14 +8,10 @@ use guild_pin_contract::metadata::TokenUri;
 use guild_pin_contract::parameters::Parameters;
 use guild_pin_contract::parameters::ParametersBuilder;
 use guild_pin_contract::utils::{bytes_to_b256, ClaimBuilder};
+use guild_pin_contract::ETHER_ASSET_ID;
 use structopt::StructOpt;
 
 use std::path::PathBuf;
-
-const ETHER_ASSET_ID: AssetId = AssetId::new([
-    248, 248, 182, 40, 61, 127, 165, 182, 114, 181, 48, 203, 184, 79, 204, 203, 79, 248, 220, 64,
-    248, 23, 110, 244, 84, 77, 219, 31, 25, 82, 173, 7,
-]);
 
 #[derive(StructOpt, Debug)]
 struct Pin {
@@ -134,7 +130,7 @@ async fn query_storage(contract: &GuildPinContract) {
 }
 
 async fn set_signer(parameters: &Parameters, contract: &GuildPinContract, hex_signer: String) {
-    let signer_bytes = hex::decode(hex_signer).unwrap();
+    let signer_bytes = hex::decode(hex_signer.trim_start_matches("0x")).unwrap();
     let new_signer = EvmAddress::from(bytes_to_b256(&signer_bytes));
     contract
         .set_signer(&parameters.owner, new_signer)
@@ -170,7 +166,7 @@ async fn test_claim(
         .build();
     let signature = parameters.sign_claim(&claim);
     contract
-        .claim(&parameters.owner, claim, signature)
+        .claim_eth(&parameters.owner, claim, signature)
         .await
         .unwrap();
 }

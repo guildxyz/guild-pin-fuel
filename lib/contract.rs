@@ -193,6 +193,18 @@ impl GuildPinContract {
             .await
     }
 
+    pub async fn claim_eth(
+        &self,
+        caller: &WalletUnlocked,
+        params: ClaimParameters,
+        signature: B512,
+    ) -> Result<FuelCallResponse<()>> {
+        let total_fee = self.fee().await? + params.admin_fee;
+        let asset_id = crate::ETHER_ASSET_ID;
+        self.unsafe_claim(caller, params, signature, total_fee, asset_id)
+            .await
+    }
+
     pub async fn unsafe_claim(
         &self,
         caller: &WalletUnlocked,

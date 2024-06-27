@@ -114,7 +114,7 @@ pub fn _claim(
         TokenError::AlreadyClaimed,
     );
 
-    // collect fees
+    // collect fees in ETH
     let fee = init_keys.fee.read();
     let asset_id = msg_asset_id();
     require(asset_id == AssetId::base(), TokenError::InvalidAssetId);
