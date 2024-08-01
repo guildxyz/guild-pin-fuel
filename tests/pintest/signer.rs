@@ -1,6 +1,7 @@
 use crate::{check_error, check_event};
 use guild_pin_contract::contract::{GuildPinContract, SignerChanged};
 use guild_pin_contract::parameters::ParametersBuilder;
+use signrs::Signer;
 
 #[tokio::test]
 async fn set_signer_success() {

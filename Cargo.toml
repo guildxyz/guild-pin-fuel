@@ -19,8 +19,10 @@ tokio = { version = "1", default-features = false, features = ["rt", "macros"] }
 
 [lib]
 path = "lib/lib.rs"
+doctest = false
 
 [[test]]
 harness = true
 name = "pintest"
 path = "tests/pintest/main.rs"
+doctest = false

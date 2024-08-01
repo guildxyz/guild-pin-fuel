@@ -9,27 +9,34 @@ use fuels::types::transaction::TxPolicies;
 use fuels::types::transaction_builders::VariableOutputPolicy;
 use fuels::types::{AssetId, Bits256, ContractId, EvmAddress, Identity, B512};
 
+/// Used when compiled without the `--release` flag.
 #[cfg(debug_assertions)]
-const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
-#[cfg(debug_assertions)]
-const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
+mod abi {
+    use fuels::prelude::*;
 
-#[cfg(debug_assertions)]
-abigen!(Contract(
-    name = "GuildPin",
-    abi = "./out/debug/guild-pin-contract-abi.json"
-));
+    pub const CONTRACT_BINARY_PATH: &str = "./out/debug/guild-pin-contract.bin";
+    pub const CONTRACT_STORAGE_PATH: &str = "./out/debug/guild-pin-contract-storage_slots.json";
+    abigen!(Contract(
+        name = "GuildPin",
+        abi = "./out/debug/guild-pin-contract-abi.json"
+    ));
+}
 
+/// Used when compiled with the `--release` flag.
 #[cfg(not(debug_assertions))]
-const CONTRACT_BINARY_PATH: &str = "./out/release/guild-pin-contract.bin";
-#[cfg(not(debug_assertions))]
-const CONTRACT_STORAGE_PATH: &str = "./out/release/guild-pin-contract-storage_slots.json";
+mod abi {
+    use fuels::prelude::*;
 
-#[cfg(not(debug_assertions))]
-abigen!(Contract(
-    name = "GuildPin",
-    abi = "./out/release/guild-pin-contract-abi.json"
-));
+    pub const CONTRACT_BINARY_PATH: &str = "./out/release/guild-pin-contract.bin";
+    pub const CONTRACT_STORAGE_PATH: &str = "./out/release/guild-pin-contract-storage_slots.json";
+
+    abigen!(Contract(
+        name = "GuildPin",
+        abi = "./out/release/guild-pin-contract-abi.json"
+    ));
+}
+
+pub use abi::*;
 
 pub struct GuildPinContract(GuildPin<WalletUnlocked>);
 
