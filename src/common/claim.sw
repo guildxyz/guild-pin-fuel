@@ -7,18 +7,18 @@ use std::hash::{Hash, Hasher};
 const X19: u8 = 25; // character \x19
 const NEWLINE: u8 = 10; // character \n
 pub struct ClaimParameters {
-    recipient: Address,
-    action: GuildAction,
-    user_id: u64,
-    guild_id: u64,
-    guild_name: str[64],
-    created_at: u64,
-    signed_at: u64,
-    chain_id: u64,
-    cid: str[64],
-    admin_treasury: Identity,
-    admin_fee: u64,
-    contract_id: ContractId,
+    pub recipient: Address,
+    pub action: GuildAction,
+    pub user_id: u64,
+    pub guild_id: u64,
+    pub guild_name: str[64],
+    pub created_at: u64,
+    pub signed_at: u64,
+    pub chain_id: u64,
+    pub cid: str[64],
+    pub admin_treasury: Identity,
+    pub admin_fee: u64,
+    pub contract_id: ContractId,
 }
 
 impl Hash for ClaimParameters {

@@ -6,16 +6,17 @@ mod interfaces;
 use ::common::action::GuildAction;
 use ::common::claim::ClaimParameters;
 use ::common::pin::PinData;
+use ::common::utils::parse_u64;
 use ::common::*;
 use ::interfaces::init::*;
 use ::interfaces::metadata::*;
 use ::interfaces::owner::*;
 use ::interfaces::src20::*;
 use ::interfaces::token::*;
-
-use ownership::Ownership;
-use src_20::SRC20;
-use src_5::{SRC5, State};
+use sway_libs::ownership::*;
+use standards::src20::SRC20;
+use standards::src5::{SRC5, State};
+use standards::src7::{Metadata, SRC7};
 
 use std::b512::B512;
 use std::constants::ZERO_B256;
@@ -34,14 +35,12 @@ configurable {
 }
 
 storage {
-    /// The contract owner
-    owner: Ownership = Ownership::uninitialized(),
     /// Evm address of the guild-backend signer wallet
     signer: b256 = ZERO_B256,
     /// Treasury address receiving minting fees
     treasury: Identity = Identity::Address(Address::from(ZERO_B256)),
     /// Fee collected upon claiming a pin
-    fee: u64 = FEE,
+    fee: u64 = 0,
     /// Map: pin_id -> metadata
     metadata: StorageMap<u64, PinData> = StorageMap {},
     /// Map: address -> pin_balance (increment upon claim, decrement upon burn)
@@ -72,7 +71,6 @@ impl Initialize for Contract {
             fee: FEE,
         };
         let keys = InitKeys {
-            owner: storage.owner,
             signer: storage.signer,
             treasury: storage.treasury,
             fee: storage.fee,
@@ -84,19 +82,19 @@ impl Initialize for Contract {
 impl OnlyOwner for Contract {
     #[storage(read, write)]
     fn set_owner(owner: Identity) {
-        _set_owner(owner, storage.owner)
+        _set_owner(owner)
     }
     #[storage(read, write)]
     fn set_signer(signer: EvmAddress) {
-        _set_signer(signer, storage.signer, storage.owner)
+        _set_signer(signer, storage.signer)
     }
     #[storage(read, write)]
     fn set_treasury(treasury: Identity) {
-        _set_treasury(treasury, storage.treasury, storage.owner)
+        _set_treasury(treasury, storage.treasury)
     }
     #[storage(read, write)]
     fn set_fee(fee: u64) {
-        _set_fee(fee, storage.fee, storage.owner)
+        _set_fee(fee, storage.fee)
     }
 }
 
@@ -131,7 +129,6 @@ impl PinToken for Contract {
         };
 
         let init_keys = InitKeys {
-            owner: storage.owner,
             signer: storage.signer,
             treasury: storage.treasury,
             fee: storage.fee,
@@ -194,7 +191,7 @@ impl PinInfo for Contract {
 impl SRC5 for Contract {
     #[storage(read)]
     fn owner() -> State {
-        _owner(storage.owner)
+        _owner() // from src5
     }
 }
 
@@ -229,12 +226,25 @@ impl SRC20 for Contract {
     }
 }
 
-// NOTE SRC-7 throws runtime errors saying
-// InvalidType("Enums currently support only one level deep heap types.
-// Thus, I'm omitting the SRC-7 impl for metadata retrieval
+impl SRC7 for Contract {
+    #[storage(read)]
+    fn metadata(asset_id: AssetId, key: String) -> Option<Metadata> {
+        if asset_id != AssetId::default() {
+            None
+        } else {
+            // damn there's no `map` on Option<T>
+            if let Some(pin_id) = parse_u64(key) {
+                Some(Metadata::String(_metadata(pin_id, storage.metadata)))
+            } else {
+                None
+            }
+        }
+    }
+}
+
 impl PinMetadata for Contract {
     #[storage(read)]
-    fn metadata(pin_id: u64) -> String {
+    fn pin_metadata(pin_id: u64) -> String {
         _metadata(pin_id, storage.metadata)
     }
 

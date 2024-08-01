@@ -1,5 +1,5 @@
 use crate::{check_error, check_event};
-use guild_pin_contract::contract::{GuildPinContract, OwnerChanged};
+use guild_pin_contract::contract::{GuildPinContract, OwnershipTransferred};
 use guild_pin_contract::parameters::ParametersBuilder;
 
 #[tokio::test]
@@ -8,7 +8,7 @@ async fn set_owner_success() {
     let contract = GuildPinContract::deploy(&parameters).await;
 
     let error = contract.owner().await.unwrap_err();
-    assert_eq!(error.to_string(), "Invalid data: NotInitialized");
+    assert_eq!(error.to_string(), "io: NotInitialized");
 
     contract.initialize(&parameters.bob).await.unwrap();
     let owner = contract.owner().await.unwrap();
@@ -20,9 +20,9 @@ async fn set_owner_success() {
         .unwrap();
     check_event(
         response,
-        OwnerChanged {
-            old: parameters.owner_id(),
-            new: parameters.alice_id(),
+        OwnershipTransferred {
+            previous_owner: parameters.owner_id(),
+            new_owner: parameters.alice_id(),
         },
     );
     let owner = contract.owner().await.unwrap();

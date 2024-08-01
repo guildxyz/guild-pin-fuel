@@ -178,7 +178,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(alice, contract.contract_id())
         .user_id(alice_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .chain_id(u64::MAX)
         .build();
@@ -192,7 +192,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(bob, contract.contract_id())
         .user_id(bob_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .build();
     let signature = parameters.sign_claim(&claim);
@@ -204,7 +204,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(charlie, contract.contract_id())
         .user_id(charlie_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .build();
     let signature = parameters.sign_claim(&claim);
@@ -216,7 +216,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(alice, contract.contract_id())
         .user_id(alice_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .action(GuildAction::Admin)
         .build();
@@ -229,7 +229,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(bob, contract.contract_id())
         .user_id(bob_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .action(GuildAction::Owner)
         .build();
@@ -243,7 +243,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(alice, contract.contract_id())
         .user_id(alice_id)
         .guild_id(guild_1)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .build();
     let signature = parameters.sign_claim(&claim);
@@ -255,7 +255,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(bob, contract.contract_id())
         .user_id(bob_id)
         .guild_id(guild_1)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .build();
     let signature = parameters.sign_claim(&claim);
@@ -348,7 +348,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(alice, contract.contract_id())
         .user_id(alice_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .build();
     let signature = parameters.sign_claim(&claim);
@@ -360,7 +360,7 @@ async fn flow_successful() {
     let claim = ClaimBuilder::new(alice, contract.contract_id())
         .user_id(alice_id)
         .guild_id(guild_0)
-        .admin_treasury(admin_treasury.clone())
+        .admin_treasury(admin_treasury)
         .admin_fee(admin_fee)
         .action(GuildAction::Owner)
         .build();
