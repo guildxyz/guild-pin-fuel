@@ -5,6 +5,7 @@ use fuels::crypto::SecretKey;
 use fuels::prelude::{launch_custom_provider_and_get_wallets, WalletUnlocked, WalletsConfig};
 use fuels::types::{Bits256, EvmAddress, Identity, Salt, B512};
 use signrs::eth::EthSigner;
+use signrs::Signer;
 
 use std::path::Path;
 use std::str::FromStr;

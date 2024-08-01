@@ -2,45 +2,78 @@ use base64::{engine::general_purpose::STANDARD, Engine as _};
 use fuels::accounts::provider::Provider;
 use fuels::prelude::Salt;
 use fuels::types::bech32::Bech32Address;
-use fuels::types::EvmAddress;
+use fuels::types::{Address, EvmAddress, Identity};
 use guild_pin_contract::contract::{GuildAction, GuildPinContract};
 use guild_pin_contract::metadata::TokenUri;
 use guild_pin_contract::parameters::Parameters;
 use guild_pin_contract::parameters::ParametersBuilder;
 use guild_pin_contract::utils::{bytes_to_b256, ClaimBuilder};
 use guild_pin_contract::ETHER_ASSET_ID;
+use signrs::Signer;
 use structopt::StructOpt;
 
 use std::path::PathBuf;
+use std::str::FromStr;
 
 #[derive(StructOpt, Debug)]
 struct Pin {
+    /// The URL of the Fuel chain.
+    ///
+    /// The default value is the testnet URL.
     #[structopt(default_value = "https://testnet.fuel.network/")]
     url: String,
+    /// Path to the Guild Pin backend signer's secret key file.
+    ///
+    /// A Guild-authorized signature is required by the contract to mint pins for users. This
+    /// signer is already initialized on the Guild backend, however, it can be overridden for
+    /// testing purposes.
     #[structopt(default_value = "../wallets/fuel-signer-seed")]
     signer: PathBuf,
+    /// Path to the contract deployer's secret key file.
+    ///
+    /// The deployer will be the admin of the contract who can dispatch admin level contract calls,
+    /// such as setting the backend signer address, the treasury or the minting fee.
     #[structopt(default_value = "../wallets/fuel-tn-deployer-sk")]
     deployer: PathBuf,
+    /// Path to the treasury's secret key file.
+    ///
+    /// This will be the address where minting fees are accumulated.
     #[structopt(default_value = "../wallets/fuel-tn-treasury-sk")]
     treasury: PathBuf,
+    /// Current deployment version of the contract.
+    ///
+    /// If you re-deploy the contract with a bumped version, it will start with a new state at a
+    /// new address that's derived from a salt generated from the version number.
     #[structopt(default_value = "1")]
     version: u8,
+    /// Optional contract interaction command.
     #[structopt(subcommand)]
     contract: Option<Contract>,
 }
 
 #[derive(StructOpt, Debug)]
 enum Contract {
+    /// Deploys the contract with the given parameters.
     Deploy,
+    /// An admin-level contract call that sets the backend signer's EVM address.
+    ///
+    /// Pins will be minted only if a valid signature is submitted from this address. The default
+    /// value is the Guild backend signer address.
     SetSigner {
-        // default is the guild backend signer address
         #[structopt(default_value = "0x989a6C5D84c932E7c9EaE8b4D2d5f378b11C21F7")]
         signer: String,
     },
+    /// An admin-level contract call that sets minting fee collected by the treasury.
     SetFee {
         #[structopt(default_value = "15")]
         fee: u64,
     },
+    /// An admin-level contract call that sets the treasury address collecting minting fees.
+    SetTreasury { treasury: String },
+    /// Dispatches a test claim for minting a Guild pin.
+    ///
+    /// This only works if the backend signer is set to the test signer. Otherwise the internally
+    /// generated signature will be invalid against the actual backend signer's address.
     TestClaim {
         #[structopt(short = "u", long)]
         user_id: u64,
@@ -49,6 +82,9 @@ enum Contract {
         #[structopt(default_value = "owner")]
         action: String,
     },
+    /// Fetches the metadata of a given pin.
+    ///
+    /// If the pin id is not submitted, it attempts to read the last minted pin's metadata.
     Metadata {
         #[structopt(short = "p", long)]
         pin_id: Option<u64>,
@@ -87,6 +123,9 @@ async fn main() {
     match pin.contract {
         Some(Contract::SetSigner { signer }) => set_signer(&parameters, &contract, signer).await,
         Some(Contract::SetFee { fee }) => set_fee(&parameters, &contract, fee).await,
+        Some(Contract::SetTreasury { treasury }) => {
+            set_treasury(&parameters, &contract, &treasury).await
+        }
         Some(Contract::TestClaim {
             user_id,
             guild_id,
@@ -102,7 +141,7 @@ async fn main() {
                 read_last_metadata(&contract).await;
             }
         }
-        _ => {}
+        _ => unimplemented!(),
     }
 
     print_balances(&parameters).await;
@@ -154,6 +193,15 @@ async fn set_signer(parameters: &Parameters, contract: &GuildPinContract, hex_si
 async fn set_fee(parameters: &Parameters, contract: &GuildPinContract, fee: u64) {
     contract.set_fee(&parameters.owner, fee).await.unwrap();
     println!("new fee: {:?}", contract.fee().await.unwrap());
+}
+
+async fn set_treasury(parameters: &Parameters, contract: &GuildPinContract, treasury: &str) {
+    let treasury = Address::from_str(treasury).expect("invalid treasury address");
+    contract
+        .set_treasury(&parameters.owner, Identity::from(treasury))
+        .await
+        .unwrap();
+    println!("new treasury: {:?}", contract.treasury().await.unwrap());
 }
 
 async fn test_claim(
