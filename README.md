@@ -169,3 +169,19 @@ cargo run --release --example pin \\
 --deployer <path-to-deployer-sk> \\
 metadata -p <pin-id>
 ```
+
+## Generate frontend bindings
+In order to make it easier for the frontend to interact with the contract, you
+can generate bindings by following this
+[tutorial](https://docs.fuel.network/guides/counter-dapp/building-a-frontend/#install-the-fuels-sdk-dependency).
+
+Essentially, you need to run
+```
+npm install fuels @fuels/react @fuels/connectors @tanstack/react-query
+mkdir frontend-bindings
+cd frontend-bindings
+npx fuels init --contracts ../guild-pin-fuel/ --output ./out
+```
+
+which will generate the bindings in the `out` directory. See the generated
+bindings in [this repo](https://github.com/guildxyz/guild-pin-fuel-frontend).
