@@ -51,6 +51,7 @@ pub struct TokenKeys {
     pub total_minted_per_guild: StorageKey<StorageMap<u64, u64>>,
     pub total_minted: StorageKey<u64>,
     pub total_supply: StorageKey<u64>,
+    pub token_of_address_by_index: StorageKey<StorageMap<Address, StorageMap<u64, u64>>>,
 }
 
 abi PinToken {
@@ -74,6 +75,8 @@ abi PinInfo {
     fn pin_id_by_address(user: Address, guild_id: u64, action: GuildAction) -> Option<u64>;
     #[storage(read)]
     fn pin_id_by_user_id(user_id: u64, guils_id: u64, action: GuildAction) -> Option<u64>;
+    #[storage(read)]
+    fn token_of_owner_by_index(user: Address, index: u64) -> Option<u64>;
 }
 
 #[storage(read, write)]
@@ -165,6 +168,9 @@ pub fn _claim(
         mint_date,
     };
     token_keys.metadata.insert(pin_id, metadata);
+
+    let user_index_map_key = token_keys.token_of_address_by_index.get(params.recipient);
+    user_index_map_key.insert(balance, pin_id);
 
     // mint token
     mint(ZERO_B256, 1);
@@ -289,4 +295,13 @@ pub fn _pin_owner(
 #[storage(read)]
 pub fn _total_minted_per_guild(guild_id: u64, key: StorageKey<StorageMap<u64, u64>>) -> u64 {
     key.get(guild_id).try_read().unwrap_or(0)
+}
+
+#[storage(read)]
+pub fn _token_of_owner_by_index(
+    user: Address,
+    index: u64,
+    key: StorageKey<StorageMap<Address, StorageMap<u64, u64>>>,
+) -> Option<u64> {
+    key.get(user).get(index).try_read()
 }
