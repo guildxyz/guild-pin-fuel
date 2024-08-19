@@ -1,7 +1,8 @@
 #![warn(clippy::all)]
 #![warn(clippy::dbg_macro)]
 
-pub mod burn;
+// NOTE burn is disabled
+//pub mod burn;
 pub mod claim;
 pub mod fee;
 pub mod init;

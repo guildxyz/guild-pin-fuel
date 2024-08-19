@@ -318,6 +318,19 @@ impl GuildPinContract {
             .map(|r| r.value)
     }
 
+    pub async fn token_of_owner_by_index(
+        &self,
+        address: Address,
+        index: u64,
+    ) -> Result<Option<u64>> {
+        self.0
+            .methods()
+            .token_of_owner_by_index(address, index)
+            .simulate()
+            .await
+            .map(|r| r.value)
+    }
+
     pub async fn encoded_metadata(&self, pin_id: u64) -> Result<String> {
         self.0
             .methods()
