@@ -111,6 +111,8 @@ async fn metadata_nonexistent_fails() {
 
     contract.pin_metadata(0).await.unwrap();
 
+    // NOTE burn is disabled
+    /*
     contract.burn(&parameters.alice, 0).await.unwrap();
 
     let error = contract
@@ -121,4 +123,5 @@ async fn metadata_nonexistent_fails() {
         .await
         .unwrap_err();
     check_error(error, "PinIdDoesNotExist");
+    */
 }

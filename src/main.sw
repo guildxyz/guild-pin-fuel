@@ -53,6 +53,8 @@ storage {
     token_id_by_user_id: TokenIdByUserIdMap = StorageMap {},
     /// Only incremented
     total_minted_per_guild: TotalMintedPerGuildMap = StorageMap {},
+    /// Map: (address + token index) -> pin_id
+    token_of_owner_by_index: TokenOfOwnerByIndexMap = StorageMap {},
     /// Only incremented
     total_minted: u64 = 0,
     /// Incremented upon successful claim, decremented upon successful burn
@@ -126,6 +128,7 @@ impl PinToken for Contract {
             total_minted_per_guild: storage.total_minted_per_guild,
             total_minted: storage.total_minted,
             total_supply: storage.total_supply,
+            token_of_address_by_index: storage.token_of_owner_by_index,
         };
 
         let init_keys = InitKeys {
@@ -143,18 +146,21 @@ impl PinToken for Contract {
     }
 
     #[storage(read, write)]
-    fn burn(pin_id: u64) {
-        let token_keys = TokenKeys {
-            metadata: storage.metadata,
-            balances: storage.balances,
-            pin_owners: storage.pin_owners,
-            token_id_by_address: storage.token_id_by_address,
-            token_id_by_user_id: storage.token_id_by_user_id,
-            total_minted_per_guild: storage.total_minted_per_guild,
-            total_minted: storage.total_minted,
-            total_supply: storage.total_supply,
-        };
-        _burn(pin_id, token_keys)
+    fn burn(_pin_id: u64) {
+        // NOTE temporarily removed
+        //let token_keys = TokenKeys {
+        //    metadata: storage.metadata,
+        //    balances: storage.balances,
+        //    pin_owners: storage.pin_owners,
+        //    token_id_by_address: storage.token_id_by_address,
+        //    token_id_by_user_id: storage.token_id_by_user_id,
+        //    total_minted_per_guild: storage.total_minted_per_guild,
+        //    total_minted: storage.total_minted,
+        //    total_supply: storage.total_supply,
+        //    token_of_address_by_index: storage.token_of_address_by_index,
+        //};
+        //_burn(pin_id, token_keys)
+        log("burning tokens is not allowed");
     }
 }
 
@@ -185,6 +191,11 @@ impl PinInfo for Contract {
     #[storage(read)]
     fn pin_id_by_user_id(user_id: u64, guild_id: u64, action: GuildAction) -> Option<u64> {
         _pin_id_by_user_id(user_id, guild_id, action, storage.token_id_by_user_id)
+    }
+
+    #[storage(read)]
+    fn token_of_owner_by_index(user: Address, index: u64) -> Option<u64> {
+        _token_of_owner_by_index(user, index, storage.token_of_owner_by_index)
     }
 }
 

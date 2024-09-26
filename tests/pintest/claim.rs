@@ -189,6 +189,81 @@ async fn claim_successful() {
 }
 
 #[tokio::test]
+async fn token_of_owner_by_index_ok() {
+    // Alice mints the first and third pins, bob the second
+    let fee = 20;
+    let genesis_balance = 100;
+    let parameters = ParametersBuilder::new()
+        .fee(fee)
+        .genesis_balance(genesis_balance)
+        .test()
+        .await;
+    let contract = GuildPinContract::init(&parameters).await;
+
+    let alice: Address = parameters.alice.address().into();
+    let bob: Address = parameters.bob.address().into();
+    let clp = ClaimBuilder::new(alice, contract.contract_id())
+        .guild_id(111)
+        .build();
+
+    let signature = parameters.sign_claim(&clp);
+    contract
+        .claim(&parameters.alice, clp, signature)
+        .await
+        .unwrap();
+
+    let clp = ClaimBuilder::new(bob, contract.contract_id())
+        .guild_id(555)
+        .build();
+
+    let signature = parameters.sign_claim(&clp);
+    contract
+        .claim(&parameters.bob, clp, signature)
+        .await
+        .unwrap();
+
+    let clp = ClaimBuilder::new(alice, contract.contract_id())
+        .guild_id(999)
+        .build();
+
+    let signature = parameters.sign_claim(&clp);
+    contract
+        .claim(&parameters.alice, clp, signature)
+        .await
+        .unwrap();
+
+    let balance_alice = contract.balance_of(alice).await.unwrap();
+    assert_eq!(balance_alice, 2);
+    let balance_bob = contract.balance_of(bob).await.unwrap();
+    assert_eq!(balance_bob, 1);
+    let total_minted = contract.total_minted().await.unwrap();
+    assert_eq!(total_minted, 3);
+
+    assert_eq!(
+        contract.token_of_owner_by_index(alice, 0).await.unwrap(),
+        Some(0)
+    );
+    assert_eq!(
+        contract.token_of_owner_by_index(alice, 1).await.unwrap(),
+        Some(2)
+    );
+    assert!(contract
+        .token_of_owner_by_index(alice, 2)
+        .await
+        .unwrap()
+        .is_none());
+    assert_eq!(
+        contract.token_of_owner_by_index(bob, 0).await.unwrap(),
+        Some(1)
+    );
+    assert!(contract
+        .token_of_owner_by_index(bob, 1)
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[tokio::test]
 async fn claim_uninitialized_fails() {
     let parameters = ParametersBuilder::new().test().await;
     let contract = GuildPinContract::deploy(&parameters).await;

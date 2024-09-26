@@ -17,6 +17,7 @@ pub type GuildIdActionTokenIdMap = StorageMap<u64, StorageMap<GuildAction, u64>>
 pub type TokenIdByAddressMap = StorageMap<Address, GuildIdActionTokenIdMap>;
 pub type TokenIdByUserIdMap = StorageMap<u64, StorageKey<GuildIdActionTokenIdMap>>;
 pub type TotalMintedPerGuildMap = StorageMap<u64, u64>;
+pub type TokenOfOwnerByIndexMap = StorageMap<Address, StorageMap<u64, u64>>;
 
 pub fn contract_id() -> ContractId {
     let current_call_frame = frame_ptr();
