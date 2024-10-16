@@ -1,14 +1,19 @@
 # Guild pin contract for Fuel
+
 This repo contains an implementation of the Guild pin smart contract for the
 Fuel chain, written in [sway](https://docs.fuel.network/docs/sway/).
 Additionally, it contains tests and examples to interact with the contract.
 
 ## Interacting with the code
+
 ### [Install Rust](https://www.rust-lang.org/tools/install)
+
 ```
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
+
 ### [Install Fuelup](https://install.fuel.network/master/installation/index.html)
+
 ```
 curl -fsSL https://install.fuel.network/ | sh
 ```
@@ -32,6 +37,7 @@ state, runs only with this setup.
 ```
 fuelup show
 ```
+
 should output something like
 
 ```
@@ -74,6 +80,7 @@ emanates from the compiler not finding the contract and its ABI.
 ```
 forc build --release
 ```
+
 The `--release` flag is highly recommended, as you'd probably want to interact
 with the optimized contract, even when testing. If you see any warnings during
 compilation, you can ignore them, because they come from Fuel-maintained
@@ -86,7 +93,9 @@ tests will look for the contract in `target/release` when tests are run with
 the `--release` flag and vice versa.
 
 ### Test the smart contract
+
 Run the contract's unit tests:
+
 ```
 forc t --release
 ```
@@ -101,19 +110,22 @@ The `--release` flag is required, because the tests will look for the optimized
 contract binary and ABI in the `target/release` directory.
 
 ### Deploy and interact with the smart contract
+
 You can interact with the contract via `examples/pin.rs`.
 
 To see the available commands, run
+
 ```
 cargo run --release --example pin -- --help
 ```
 
-1) Deploy the contract
+1. Deploy the contract
 
 First, add the secret keys of the backend signer, the deployer and the treasury
 to a given path. The signer seed should be 32 bytes in the form of `[0, 1, 2,
 3,...]`. The deployer and treasury secret keys should be a 64 characters long
 hex encoded string, i.e. 32 bytes hex encoded to a string.
+
 ```
 cargo run --release --example pin \\
 -- \\
@@ -123,15 +135,16 @@ cargo run --release --example pin \\
 --treasury <path-to-treasury-sk> \\
 deploy
 ```
+
 You might ask, why do we need the signer seed and the treasury seed here? Well,
 in order to be usable for tests, we definitely need the signer seed, however
 the treasury is indeed not necessary. Feel free to change the code accordingly.
 
-2) Set the backend signer address
-The first thing you should do as an admin after deploying/testing the contract
-is setting the backend signer address. The default value for the signer address
-is already set to the current Guild backend signer, so it should be overridden
-only if it changes on the backend.
+2. Set the backend signer address
+   The first thing you should do as an admin after deploying/testing the contract
+   is setting the backend signer address. The default value for the signer address
+   is already set to the current Guild backend signer, so it should be overridden
+   only if it changes on the backend.
 
 ```
 cargo run --release --example pin \\
@@ -141,7 +154,7 @@ cargo run --release --example pin \\
 set-signer
 ```
 
-2) Set the treasury fee
+2. Set the treasury fee
 
 ```
 cargo run --release --example pin \\
@@ -151,7 +164,7 @@ cargo run --release --example pin \\
 set-fee <fee>
 ```
 
-2) Set the treasury address
+2. Set the treasury address
 
 ```
 cargo run --release --example pin \\
@@ -161,7 +174,8 @@ cargo run --release --example pin \\
 set-treasury <treasury-address>
 ```
 
-3) Fetch a pin's metadata
+3. Fetch a pin's metadata
+
 ```
 cargo run --release --example pin \\
 -- \\
@@ -171,11 +185,13 @@ metadata -p <pin-id>
 ```
 
 ## Generate frontend bindings
+
 In order to make it easier for the frontend to interact with the contract, you
 can generate bindings by following this
 [tutorial](https://docs.fuel.network/guides/counter-dapp/building-a-frontend/#install-the-fuels-sdk-dependency).
 
 Essentially, you need to run
+
 ```
 npm install fuels @fuels/react @fuels/connectors @tanstack/react-query
 mkdir frontend-bindings
@@ -185,3 +201,11 @@ npx fuels init --contracts ../guild-pin-fuel/ --output ./out
 
 which will generate the bindings in the `out` directory. See the generated
 bindings in [this repo](https://github.com/guildxyz/guild-pin-fuel-frontend).
+
+Generate types with
+
+```
+npx fuels typegen -i out/release/guild-pin-contract-abi.json -o ./types
+```
+
+which will create the types in the `types` directory.
