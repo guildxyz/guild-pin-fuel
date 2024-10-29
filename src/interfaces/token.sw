@@ -7,7 +7,7 @@ use ::common::contract_id;
 use ::interfaces::init::{_initialized, InitKeys};
 
 use std::b512::B512;
-use std::asset::{burn, mint, transfer};
+use std::asset::{burn, mint_to, transfer};
 use std::asset_id::AssetId;
 use std::block::timestamp as now;
 use std::call_frames::msg_asset_id;
@@ -156,7 +156,7 @@ pub fn _claim(
         .token_id_by_user_id
         .insert(params.user_id, claims_map_key);
 
-    // persist token metadta
+    // persist token metadata
     let metadata = PinData {
         holder: params.recipient,
         action: params.action,
@@ -173,7 +173,7 @@ pub fn _claim(
     user_index_map_key.insert(balance, pin_id);
 
     // mint token
-    mint(ZERO_B256, 1);
+    mint_to(Identity::Address(params.recipient), ZERO_B256, 1);
     log(PinMinted {
         recipient: params.recipient,
         pin_id,

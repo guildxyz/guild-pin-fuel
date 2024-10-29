@@ -87,14 +87,14 @@ async fn claim_successful() {
         .get_asset_balance(parameters.alice.address(), contract.asset_id())
         .await
         .unwrap();
-    assert_eq!(pin_balance, 0);
+    assert_eq!(pin_balance, 1);
 
     let pin_balances = parameters
         .provider()
         .get_contract_balances(contract.bech_contract_id())
         .await
         .unwrap();
-    assert_eq!(pin_balances.get(&contract.asset_id()), Some(&1));
+    assert_eq!(pin_balances.get(&contract.asset_id()), Some(&0));
 
     // mint another pin with a different action
     // and admin treasury
@@ -178,14 +178,14 @@ async fn claim_successful() {
         .get_asset_balance(parameters.alice.address(), contract.asset_id())
         .await
         .unwrap();
-    assert_eq!(pin_balance, 0);
+    assert_eq!(pin_balance, 2);
 
     let pin_balances = parameters
         .provider()
         .get_contract_balances(contract.bech_contract_id())
         .await
         .unwrap();
-    assert_eq!(pin_balances.get(&contract.asset_id()), Some(&2));
+    assert_eq!(pin_balances.get(&contract.asset_id()), Some(&0));
 }
 
 #[tokio::test]
