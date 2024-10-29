@@ -127,10 +127,11 @@ pub fn _claim(
         TokenError::InsufficientAmount,
     );
 
-    if params.admin_treasury != Identity::ContractId(contract_id())
-    {
-        transfer(params.admin_treasury, asset_id, params.admin_fee);
-    }
+    // Note temporarily disabled admin fee collection
+    // if params.admin_treasury != Identity::ContractId(contract_id())
+    // {
+    //     transfer(params.admin_treasury, asset_id, params.admin_fee);
+    // }
     transfer(init_keys.treasury.read(), asset_id, fee);
 
     // update storage

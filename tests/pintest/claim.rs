@@ -166,12 +166,12 @@ async fn claim_successful() {
         .unwrap();
     assert_eq!(base_balance, genesis_balance + 2 * fee);
 
-    let base_balance = parameters
-        .provider()
-        .get_asset_balance(parameters.charlie.address(), AssetId::BASE)
-        .await
-        .unwrap();
-    assert_eq!(base_balance, genesis_balance + clp.admin_fee);
+    // let base_balance = parameters
+    //     .provider()
+    //     .get_asset_balance(parameters.charlie.address(), AssetId::BASE)
+    //     .await
+    //     .unwrap();
+    // assert_eq!(base_balance, genesis_balance + clp.admin_fee);
 
     let pin_balance = parameters
         .provider()
