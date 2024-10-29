@@ -8,13 +8,13 @@ Additionally, it contains tests and examples to interact with the contract.
 
 ### [Install Rust](https://www.rust-lang.org/tools/install)
 
-```
+```sh
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 ```
 
 ### [Install Fuelup](https://install.fuel.network/master/installation/index.html)
 
-```
+```sh
 curl -fsSL https://install.fuel.network/ | sh
 ```
 
@@ -25,7 +25,7 @@ Unfortunately, I ran into this
 so as a temporary workaround, you'll need to add the following components to a
 custom toolchain. Feel free to give a different name than `custom-toolchain`.
 
-```
+```sh
 fuelup toolchain new custom-toolchain
 fuelup component add fuel-core@0.28.0
 fuelup component add forc@0.60.0
@@ -34,7 +34,7 @@ fuelup component add forc@0.60.0
 Maybe in the future, this won't be necessary, but the code, in its current
 state, runs only with this setup.
 
-```
+```sh
 fuelup show
 ```
 
@@ -77,7 +77,7 @@ forc : 0.62.0
 check that you're using the `--release` flag, because the issue probably
 emanates from the compiler not finding the contract and its ABI.
 
-```
+```sh
 forc build --release
 ```
 
@@ -96,13 +96,13 @@ the `--release` flag and vice versa.
 
 Run the contract's unit tests:
 
-```
+```sh
 forc t --release
 ```
 
 Run the contract's integration tests (written in Rust):
 
-```
+```sh
 cargo t --release
 ```
 
@@ -115,7 +115,7 @@ You can interact with the contract via `examples/pin.rs`.
 
 To see the available commands, run
 
-```
+```sh
 cargo run --release --example pin -- --help
 ```
 
@@ -126,7 +126,7 @@ to a given path. The signer seed should be 32 bytes in the form of `[0, 1, 2,
 3,...]`. The deployer and treasury secret keys should be a 64 characters long
 hex encoded string, i.e. 32 bytes hex encoded to a string.
 
-```
+```sh
 cargo run --release --example pin \\
 -- \\
 --url <mainnet-url> \\
@@ -146,7 +146,7 @@ the treasury is indeed not necessary. Feel free to change the code accordingly.
    is already set to the current Guild backend signer, so it should be overridden
    only if it changes on the backend.
 
-```
+```sh
 cargo run --release --example pin \\
 -- \\
 --url <mainnet-url> \\
@@ -156,7 +156,7 @@ set-signer
 
 2. Set the treasury fee
 
-```
+```sh
 cargo run --release --example pin \\
 -- \\
 --url <mainnet-url> \\
@@ -166,7 +166,7 @@ set-fee <fee>
 
 2. Set the treasury address
 
-```
+```sh
 cargo run --release --example pin \\
 -- \\
 --url <mainnet-url> \\
@@ -176,7 +176,7 @@ set-treasury <treasury-address>
 
 3. Fetch a pin's metadata
 
-```
+```sh
 cargo run --release --example pin \\
 -- \\
 --url <mainnet-url> \\
@@ -192,7 +192,7 @@ can generate bindings by following this
 
 Essentially, you need to run
 
-```
+```sh
 npm install fuels @fuels/react @fuels/connectors @tanstack/react-query
 mkdir frontend-bindings
 cd frontend-bindings
@@ -204,7 +204,7 @@ bindings in [this repo](https://github.com/guildxyz/guild-pin-fuel-frontend).
 
 Generate types with
 
-```
+```sh
 npx fuels typegen -i out/release/guild-pin-contract-abi.json -o ./types
 ```
 
